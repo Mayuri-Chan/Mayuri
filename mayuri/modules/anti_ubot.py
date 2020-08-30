@@ -74,7 +74,7 @@ async def rm_blubot(client,message):
 		return
 
 	text = (message.text).split()
-	if len(text) < 2:
+	if len(text) > 1:
 		command = text[1]
 		if sql.rm_from_antiubot(chat_id,command):
 			await message.reply_text("Command {} Berhasil dihapus dari Blacklist Userbot!".format(command))
