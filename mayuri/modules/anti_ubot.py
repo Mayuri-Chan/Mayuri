@@ -1,34 +1,14 @@
 import array
 
 from mayuri import bot, Command, OWNER
-from mayuri.modules.admin import adminlist
+from mayuri.modules.helper.misc import adminlist
 from mayuri.modules.helper.time import create_time
+from mayuri.modules.helper.string import after, between
 from mayuri.modules.sql import anti_ubot as sql
 from pyrogram import filters
 from pyrogram.handlers import MessageHandler
 from pyrogram.types import ChatPermissions
 from time import time
-
-def between(value, a, b):
-    # Find and validate before-part.
-    pos_a = value.find(a)
-    if pos_a == -1: return ""
-    # Find and validate after part.
-    pos_b = value.rfind(b)
-    if pos_b == -1: return ""
-    # Return middle part.
-    adjusted_pos_a = pos_a + len(a)
-    if adjusted_pos_a >= pos_b: return ""
-    return value[adjusted_pos_a:pos_b]
-
-def after(value, a):
-    # Find and validate first part.
-    pos_a = value.rfind(a)
-    if pos_a == -1: return ""
-    # Returns chars after the found string.
-    adjusted_pos_a = pos_a + len(a)
-    if adjusted_pos_a >= len(value): return ""
-    return value[adjusted_pos_a:]
 
 @bot.on_message(filters.command("addblubot", Command) & filters.group)
 async def addblubot(client,message):
