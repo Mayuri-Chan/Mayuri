@@ -83,3 +83,8 @@ def mulaisql() -> scoped_session:
 
 BASE = declarative_base()
 SESSION = mulaisql()
+DisableAbleLs = []
+
+def AddHandler(func,filt):
+	my_handler = MessageHandler(func,filt)
+	bot.add_handler(my_handler)

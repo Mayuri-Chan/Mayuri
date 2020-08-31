@@ -1,16 +1,15 @@
 import array
 
-from mayuri import bot, Command, OWNER
+from mayuri import bot, Command, OWNER, AddHandler
+from mayuri.modules.disableable import DisableAbleHandler, CheckDisable
 from mayuri.modules.helper.misc import adminlist
 from mayuri.modules.helper.time import create_time
 from mayuri.modules.helper.string import after, between
 from mayuri.modules.sql import anti_ubot as sql
 from pyrogram import filters
-from pyrogram.handlers import MessageHandler
 from pyrogram.types import ChatPermissions
 from time import time
 
-@bot.on_message(filters.command("addblubot", Command) & filters.group)
 async def addblubot(client,message):
 	chat_id = message.chat.id
 	admin_list = await adminlist(client,chat_id)
@@ -46,7 +45,6 @@ async def addblubot(client,message):
 	sql.add_to_antiubot(chat_id,command,mode,time)
 	await message.reply_text("Command {} Telah ditambahkan ke Blacklist dengan {}".format(command,mode_text))
 
-@bot.on_message(filters.command("rmblubot", Command) & filters.group)
 async def rm_blubot(client,message):
 	chat_id = message.chat.id
 	admin_list = await adminlist(client,chat_id)
@@ -63,9 +61,12 @@ async def rm_blubot(client,message):
 	else:
 		await message.reply_text("Command Apa yang mau dihapus dari Blacklist Userbot?")
 
-@bot.on_message(filters.command("blubot", Command) & filters.group)
-async def blbot_list(client,message):
+async def blubot_list(client,message):
 	chat_id = message.chat.id
+	check = CheckDisable(chat_id, message.text)
+	if check:
+		return
+
 	list_command = sql.antiubot_list(chat_id)
 	mute = []
 	kick = []
@@ -119,7 +120,6 @@ async def blbot_list(client,message):
 	else:
 		await message.reply_text("Tidak ada Command Userbot yang diblacklist di Grup ini!")
 
-@bot.on_message(filters.text & filters.group)
 async def bl_ubot(client,message):
 	unsafe_pattern = r'^[^/!#@\$A-Za-z]'
 	#log_id = 
@@ -171,3 +171,8 @@ async def bl_ubot(client,message):
 				await message.reply_text("Terbanned untuk {}! 😝\nUser : {}\nAlasan : Mengatakan {}{}".format(time_raw,mention,first,command))
 				#await client.send_message(log_id,"#UBOT_TBAN\n{}\nUser : {}\nDurasi : {}\nAlasan : Mengatakan {}{}".format(chat_title,mention,time_raw,first,command))
 
+
+AddHandler(addblubot,filters.command("addblubot", Command) & filters.group)
+AddHandler(rm_blubot,filters.command("rmblubot", Command) & filters.group)
+DisableAbleHandler(blubot_list,filters.command("blubot", Command) & filters.group,"blubot")
+AddHandler(bl_ubot,filters.text & filters.group)
