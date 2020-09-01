@@ -1,4 +1,3 @@
-git+https://github.com/pyrogram/pyrogram@asyncio-dev
 psycopg2
 psycopg2-binary
 pyrogram
