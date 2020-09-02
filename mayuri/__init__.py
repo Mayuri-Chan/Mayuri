@@ -1,5 +1,7 @@
 import os
+
 from pyrogram import Client
+from pyrogram.handlers import MessageHandler
 
 # Postgresql
 import threading
