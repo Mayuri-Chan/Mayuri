@@ -175,4 +175,3 @@ async def bl_ubot(client,message):
 AddHandler(addblubot,filters.command("addblubot", Command) & filters.group)
 AddHandler(rm_blubot,filters.command("rmblubot", Command) & filters.group)
 DisableAbleHandler(blubot_list,filters.command("blubot", Command) & filters.group,"blubot")
-AddHandler(bl_ubot,filters.text & filters.group)
