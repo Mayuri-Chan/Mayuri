@@ -1,0 +1,7 @@
+*.session
+bot.txt
+mayuri/config.py
+mayuri/__pycache__
+mayuri/modules/__pycache__
+mayuri/modules/helper/__pycache__
+mayuri/modules/sql/__pycache__
