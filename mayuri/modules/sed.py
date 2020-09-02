@@ -1,4 +1,4 @@
-from mayuri import AddHandler
+from mayuri.modules.disableable import DisableAbleHandler
 from pyrogram import filters
 
 async def sed(client,message):
@@ -9,4 +9,4 @@ async def sed(client,message):
 	new_text = old_text.replace(old,new)
 	await message.reply_to_message.reply_text(new_text)
 
-AddHandler(sed,filters.reply & filters.regex('^s/(.*?)'))
+DisableAbleHandler(sed,filters.reply & filters.regex('^s/(.*?)'),'sed')
