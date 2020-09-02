@@ -6,7 +6,7 @@ async def sed(client,message):
 	old_word = text[1]
 	new_word = text[2]
 	old_text = message.reply_to_message.text
-	new_text = old_text.replace(old,new)
+	new_text = old_text.replace(old_word,new_word)
 	await message.reply_to_message.reply_text(new_text)
 
 DisableAbleHandler(sed,filters.reply & filters.regex('^s/(.*?)'),'sed')
