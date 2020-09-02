@@ -38,9 +38,9 @@ def rm_from_disableable(chat_id,command):
 			SESSION.close()
 			return False
 
-def get_disableable(command):
+def get_disabled(chat_id):
 	try:
-		return SESSION.query(DisableAble).filter(DisableAble.command == str(command)).order_by(DisableAble.chat_id.asc()).all()
+		return SESSION.query(DisableAble).filter(DisableAble.chat_id == str(chat_id)).order_by(DisableAble.command.asc()).all()
 	finally:
 		SESSION.close()
 

@@ -62,5 +62,36 @@ async def enablehandler(client,message):
 	else:
 		await message.reply_text("Command Apa yang mau dienable?")
 
+async def disabled_list(client,message):
+	chat_id = message.chat.id
+	admin_list = await adminlist(client,chat_id)
+	if message.from_user.id not in admin_list:
+		return
+
+	list_disabled = sql.get_disabled(chat_id)
+	if list_disabled:
+		text = "Daftar Perintah yang didisable di grup ini:"
+		for disabled in list_disabled:
+			text = text+"\n - {}".format(disabled.command)
+
+		await message.reply_text(text)
+	else:
+		await message.reply_text("Tidak ada Perintah yang didisable di grup ini!")
+
+async def disableable_list(client,message):
+	chat_id = message.chat.id
+	admin_list = await adminlist(client,chat_id)
+	if message.chat.type != "private" and message.from_user.id not in admin_list:
+		return
+
+	DisableAbleLs.sort()
+	text = "Daftar Perintah yang dapat didisable:"
+	for disableable in DisableAbleLs:
+		text = text+"\n - {}".format(disableable)
+
+	await message.reply_text(text)
+
 AddHandler(disablehandler,filters.group & filters.command("disable", Command))
 AddHandler(enablehandler,filters.group & filters.command("enable", Command))
+AddHandler(disabled_list,filters.group & filters.command("disabled", Command))
+AddHandler(disableable_list,filters.command("disableable", Command))
