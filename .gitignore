@@ -1,5 +1,6 @@
 *.session
 bot.txt
+images/*.png
 mayuri/config.py
 mayuri/__pycache__
 mayuri/modules/__pycache__

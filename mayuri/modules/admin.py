@@ -1,5 +1,5 @@
 import array
-from mayuri import bot, Command
+from mayuri import Command
 from mayuri.modules.disableable import DisableAbleHandler, CheckDisable
 from pyrogram import filters
 

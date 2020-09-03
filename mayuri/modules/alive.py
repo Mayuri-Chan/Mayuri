@@ -1,5 +1,5 @@
 import sys
-from mayuri import bot, Command, OWNER, AddHandler
+from mayuri import Command, OWNER, AddHandler
 from pyrogram import filters, __version__
 
 async def alive(client, message):

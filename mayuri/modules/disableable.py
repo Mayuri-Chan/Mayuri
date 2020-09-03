@@ -1,6 +1,6 @@
 import array
 
-from mayuri import bot, Command, OWNER, AddHandler, DisableAbleLs
+from mayuri import bot, Command, AddHandler, DisableAbleLs
 from mayuri.modules.helper.misc import adminlist
 from mayuri.modules.helper.string import after
 from mayuri.modules.sql import disableable as sql

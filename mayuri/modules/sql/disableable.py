@@ -1,7 +1,7 @@
 import threading
 
 from mayuri import OWNER, BASE, SESSION
-from sqlalchemy import Column, Integer, String, Boolean, UnicodeText, and_
+from sqlalchemy import Column, String
 
 class DisableAble(BASE):
 	__tablename__ = "disableable_command"

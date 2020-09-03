@@ -1,7 +1,7 @@
 import threading
 
 from mayuri import OWNER, BASE, SESSION
-from sqlalchemy import Column, Integer, String, Boolean, UnicodeText, and_
+from sqlalchemy import Column, Integer, String
 
 class AntiUbot(BASE):
 	__tablename__ = "anti_ubot"

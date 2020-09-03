@@ -1,6 +1,6 @@
 import array
 
-from mayuri import bot, Command, OWNER, AddHandler
+from mayuri import Command, OWNER, AddHandler
 from mayuri.modules.disableable import DisableAbleHandler, CheckDisable
 from mayuri.modules.helper.misc import adminlist
 from mayuri.modules.helper.time import create_time
