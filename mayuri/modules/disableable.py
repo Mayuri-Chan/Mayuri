@@ -1,5 +1,7 @@
 import array
 
+from functools import wraps
+
 from mayuri import bot, Command, AddHandler, DisableAbleLs
 from mayuri.modules.helper.misc import adminlist
 from mayuri.modules.helper.string import after
@@ -7,28 +9,18 @@ from mayuri.modules.sql import disableable as sql
 from pyrogram import filters
 from pyrogram.handlers import MessageHandler
 
-def DisableAbleHandler(func,filt,name):
+def disableable(func):
+	wraps(func)
+	name = func.__name__
 	if name not in DisableAbleLs:
 		DisableAbleLs.append(name)
 
-	my_handler = MessageHandler(func,filt)
-	bot.add_handler(my_handler)
+	async def decorator(client,message):
+		chat_id = message.chat.id
+		if not sql.check_disableable(chat_id,name):
+			await func(client,message)
 
-def CheckDisable(chat_id,command):
-	command = str(command)
-	if ' ' in command:
-		command = command.split()
-		if '$' in command:
-			command = after(command[0],'$')
-		else:
-			command = after(command[0],'/')
-	else:
-		if '$' in command:
-			command = after(command,'$')
-		else:
-			command = after(command,'/')
-
-	return sql.check_disableable(chat_id,command)
+	return decorator
 
 async def disablehandler(client,message):
 	chat_id = message.chat.id

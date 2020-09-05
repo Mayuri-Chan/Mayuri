@@ -1,7 +1,7 @@
 import array
 
 from mayuri import Command, OWNER, AddHandler
-from mayuri.modules.disableable import DisableAbleHandler, CheckDisable
+from mayuri.modules.disableable import disableable
 from mayuri.modules.helper.misc import adminlist
 from mayuri.modules.helper.time import create_time
 from mayuri.modules.helper.string import after, between, split_quotes
@@ -80,12 +80,9 @@ async def rm_bl(client,message):
 	else:
 		await message.reply_text("Apa yang mau dihapus dari Blacklist?")
 
-async def bl_list(client,message):
+@disableable
+async def blacklist(client,message):
 	chat_id = message.chat.id
-	check = CheckDisable(chat_id, message.text)
-	if check:
-		return
-
 	list_trigger = sql.blacklist_list(chat_id)
 	delete = []
 	mute = []
@@ -200,4 +197,4 @@ async def bl(client,message):
 
 AddHandler(addbl,filters.command("addbl", Command) & filters.group)
 AddHandler(rm_bl,filters.command("rmbl", Command) & filters.group)
-DisableAbleHandler(bl_list,filters.command("blacklist", Command) & filters.group,"blubot")
+AddHandler(blacklist,filters.command("blacklist", Command) & filters.group)
