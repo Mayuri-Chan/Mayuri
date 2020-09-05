@@ -182,6 +182,8 @@ async def bl(client,message):
 	chat_title = message.chat.title
 	admin_list = await adminlist(client,chat_id)
 	text = (message.text).lower()
+	data_list = []
+	mode_list = []
 	if (user_id not in admin_list) and (user_id not in OWNER):
 		check = sql.blacklist_list(chat_id)
 		if not check:
@@ -192,39 +194,80 @@ async def bl(client,message):
 				time_raw = trigger.time
 				time = create_time(time_raw)
 				if trigger.mode == 0:
-					await message.delete()
-					#await client.send_message(log_id,"#BLACKLIST_DELETE\n{}\nUser : {}\nAlasan : Mengatakan <code>{}</code>".format(chat_title,mention,trigger.trigger))
-				if trigger.mode == 1:
-					await message.delete()
-					await client.restrict_chat_member(chat_id, user_id, ChatPermissions())
-					await message.reply_text("Dibisukan!\nUser : {}\nAlasan : Mengatakan <code>{}</code>".format(mention,trigger.trigger),disable_web_page_preview=True)
-					#await client.send_message(log_id,"#BLACKLIST_MUTE\n{}\nUser : {}\nAlasan : Mengatakan <code>{}</code>".format(chat_title,mention,trigger.trigger))
+					data_list.append({'trigger': trigger.trigger,'mode': trigger.mode})
+					if trigger.mode not in mode_list:
+						mode_list.append(trigger.mode)
+				elif trigger.mode == 1:
+					mode = 2
+					data_list.append({'trigger': trigger.trigger,'mode': trigger.mode})
+					if trigger.mode not in mode_list:
+						mode_list.append(trigger.mode)
 				elif trigger.mode == 2:
-					await message.delete()
-					await client.kick_chat_member(chat_id,user_id)
-					await client.unban_chat_member(chat_id,user_id)
-					await message.reply_sticker("https://t.me/CactusID_OOT/116113")
-					await message.reply_text("Ditendang! 😝\nUser : {}\nAlasan : Mengatakan <code>{}</code>".format(mention,trigger.trigger),disable_web_page_preview=True)
-					#await client.send_message(log_id,"#BLACKLIST_KICK\n{}\nUser : {}\nAlasan : Mengatakan <code>{}</code>".format(chat_title,mention,trigger.trigger))
+					mode = 3
+					data_list.append({'trigger': trigger.trigger,'mode': mode})
+					if trigger.mode not in mode_list:
+						mode_list.append(mode)
 				elif trigger.mode == 3:
-					await message.delete()
-					await client.kick_chat_member(chat_id,user_id)
-					await message.reply_sticker("https://t.me/CactusID_OOT/116113")
-					await message.reply_text("Terbanned! 😝\nUser : {}\nAlasan : Mengatakan <code>{}</code>".format(mention,trigger.trigger),disable_web_page_preview=True)
-					#await client.send_message(log_id,"#BLACKLIST_BAN\n{}\nUser : {}\nAlasan : Mengatakan <code>{}</code>".format(chat_title,mention,trigger.trigger))
+					mode = 5
+					data_list.append({'trigger': trigger.trigger,'mode': mode})
+					if trigger.mode not in mode_list:
+						mode_list.append(mode)
 				elif trigger.mode == 4:
-					await message.delete()
-					await client.restrict_chat_member(chat_id, user_id, ChatPermissions(), time)
-					await message.reply_text("Dibisukan untuk {}\nUser : {}\nAlasan : Mengatakan <code>{}</code>".format(time_raw,mention,trigger.trigger),disable_web_page_preview=True)
-					#await client.send_message(log_id,"#BLACKLIST_TMUTE\n{}\nUser : {}\nDurasi : {}\nAlasan : Mengatakan <code>{}</code>".format(chat_title,mention,time_raw,trigger.trigger))
+					mode = 1
+					data_list.append({'trigger': trigger.trigger,'mode': mode})
+					if trigger.mode not in mode_list:
+						mode_list.append(mode)
 				elif trigger.mode == 5:
-					await message.delete()
-					await client.kick_chat_member(chat_id,user_id, time)
-					await message.reply_sticker("https://t.me/CactusID_OOT/116113")
-					await message.reply_text("Terbanned untuk {}! 😝\nUser : {}\nAlasan : Mengatakan <code>{}</code>".format(time_raw,mention,trigger.trigger),disable_web_page_preview=True)
-					#await client.send_message(log_id,"#BLACKLIST_TBAN\n{}\nUser : {}\nDurasi : {}\nAlasan : Mengatakan <code>{}</code>".format(chat_title,mention,time_raw,trigger.trigger))
+					mode = 4
+					data_list.append({'trigger': trigger.trigger,'mode': mode})
+					if trigger.mode not in mode_list:
+						mode_list.append(mode)
+		
+		mode_list.sort()
+		if len(mode_list) > 1:
+			mode = mode_list[len(mode_list)-1]
+			for data in data_list:
+				if data["mode"] == mode:
+					trigger = data["trigger"]
+					break
 
+		else:
+			mode = mode_list[0]
+			trigger = data_list[0]["trigger"]
 
+		if mode == 0:
+			await message.delete()
+			#await client.send_message(log_id,"#BLACKLIST_DELETE\n{}\nUser : {}\nAlasan : Mengatakan <code>{}</code>".format(chat_title,mention,trigger))
+		elif mode == 1:
+			await message.delete()
+			await client.restrict_chat_member(chat_id, user_id, ChatPermissions(), time)
+			await message.reply_text("Dibisukan untuk {}\nUser : {}\nAlasan : Mengatakan <code>{}</code>".format(time_raw,mention,trigger),disable_web_page_preview=True)
+			#await client.send_message(log_id,"#BLACKLIST_TMUTE\n{}\nUser : {}\nDurasi : {}\nAlasan : Mengatakan <code>{}</code>".format(chat_title,mention,time_raw,trigger))
+		elif mode == 2:
+			await message.delete()
+			await client.restrict_chat_member(chat_id, user_id, ChatPermissions())
+			await message.reply_text("Dibisukan!\nUser : {}\nAlasan : Mengatakan <code>{}</code>".format(mention,trigger),disable_web_page_preview=True)
+			#await client.send_message(log_id,"#BLACKLIST_MUTE\n{}\nUser : {}\nAlasan : Mengatakan <code>{}</code>".format(chat_title,mention,trigger))
+		elif mode == 3:
+			await message.delete()
+			await client.kick_chat_member(chat_id,user_id)
+			await client.unban_chat_member(chat_id,user_id)
+			await message.reply_sticker("https://t.me/CactusID_OOT/116113")
+			await message.reply_text("Ditendang! 😝\nUser : {}\nAlasan : Mengatakan <code>{}</code>".format(mention,trigger),disable_web_page_preview=True)
+			#await client.send_message(log_id,"#BLACKLIST_KICK\n{}\nUser : {}\nAlasan : Mengatakan <code>{}</code>".format(chat_title,mention,trigger))
+		elif mode == 4:
+			await message.delete()
+			await client.kick_chat_member(chat_id,user_id, time)
+			await message.reply_sticker("https://t.me/CactusID_OOT/116113")
+			await message.reply_text("Terbanned untuk {}! 😝\nUser : {}\nAlasan : Mengatakan <code>{}</code>".format(time_raw,mention,trigger),disable_web_page_preview=True)
+			#await client.send_message(log_id,"#BLACKLIST_TBAN\n{}\nUser : {}\nDurasi : {}\nAlasan : Mengatakan <code>{}</code>".format(chat_title,mention,time_raw,trigger))
+		elif mode == 5:
+			await message.delete()
+			await client.kick_chat_member(chat_id,user_id)
+			await message.reply_sticker("https://t.me/CactusID_OOT/116113")
+			await message.reply_text("Terbanned! 😝\nUser : {}\nAlasan : Mengatakan <code>{}</code>".format(mention,trigger),disable_web_page_preview=True)
+			#await client.send_message(log_id,"#BLACKLIST_BAN\n{}\nUser : {}\nAlasan : Mengatakan <code>{}</code>".format(chat_title,mention,trigger))
+		
 AddHandler(addbl,filters.command("addbl", Command) & filters.group)
 AddHandler(rm_bl,filters.command("rmbl", Command) & filters.group)
 AddHandler(blacklist,filters.command("blacklist", Command) & filters.group)
