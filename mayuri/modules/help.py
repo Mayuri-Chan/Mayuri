@@ -31,7 +31,6 @@ async def help_button_callback(_, __, query):
 	if re.match(r"help_", query.data):
 		return True
 
-
 help_button_create = filters.create(help_button_callback)
 
 @bot.on_callback_query(help_button_create)
