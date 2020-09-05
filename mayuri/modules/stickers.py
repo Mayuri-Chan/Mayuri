@@ -17,7 +17,9 @@ async def getsticker(client,message):
 	chat_id = message.chat.id
 	if message.reply_to_message and message.reply_to_message.sticker:
 		file = message.reply_to_message.sticker
+		await message.reply_text("Gunakan fitur ini dengan bijak!\nSilahkan cek gambar dibawah ini :)")
 		await client.download_media(file, file_name='images/sticker.png')
+		await message.reply_photo(photo=open('images/sticker.png', 'rb'))
 		await message.reply_document(document=open('images/sticker.png', 'rb'))
 		os.remove("images/sticker.png")
 	else:
