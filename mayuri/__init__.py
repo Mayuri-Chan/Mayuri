@@ -1,5 +1,7 @@
 import os
 
+from functools import wraps
+
 from pyrogram import Client
 from pyrogram.handlers import MessageHandler
 
@@ -90,3 +92,21 @@ DisableAbleLs = []
 def AddHandler(func,filt):
 	my_handler = MessageHandler(func,filt)
 	bot.add_handler(my_handler)
+
+async def adminlist(client,chat_id):
+    all = client.iter_chat_members(chat_id, filter="administrators")
+    admin = []
+    async for a in all:
+        admin.append(a.user.id)
+    return admin
+
+def admin(func):
+	wraps(func)
+	async def decorator(client,message):
+		chat_id = message.chat.id
+		all_admin = await adminlist(client,chat_id)
+		if message.from_user.id in all_admin:
+			await func(client,message)
+		else:
+			await message.reply_text("Anda bukan admin!")
+	return decorator

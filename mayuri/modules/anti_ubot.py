@@ -1,8 +1,7 @@
 import array
 
-from mayuri import Command, OWNER, AddHandler
+from mayuri import Command, OWNER, AddHandler, adminlist, admin
 from mayuri.modules.disableable import disableable
-from mayuri.modules.helper.misc import adminlist
 from mayuri.modules.helper.time import create_time
 from mayuri.modules.helper.string import after, between
 from mayuri.modules.sql import anti_ubot as sql
@@ -10,12 +9,9 @@ from pyrogram import filters
 from pyrogram.types import ChatPermissions
 from time import time
 
+@admin
 async def addblubot(client,message):
 	chat_id = message.chat.id
-	admin_list = await adminlist(client,chat_id)
-	if message.from_user.id not in admin_list:
-		return
-
 	mode_list = {'mute': 1,'kick': 2,'ban': 3,'tmute': 4,'tban': 5}
 	unit_list = ['d','h','m','s']
 	text = (message.text).split()
@@ -45,12 +41,9 @@ async def addblubot(client,message):
 	sql.add_to_antiubot(chat_id,command,mode,time)
 	await message.reply_text("Command {} Telah ditambahkan ke Blacklist dengan {}".format(command,mode_text))
 
+@admin
 async def rm_blubot(client,message):
 	chat_id = message.chat.id
-	admin_list = await adminlist(client,chat_id)
-	if message.from_user.id not in admin_list:
-		return
-
 	text = (message.text).split()
 	if len(text) > 1:
 		command = text[1]

@@ -2,8 +2,7 @@ import array
 
 from functools import wraps
 
-from mayuri import bot, Command, AddHandler, DisableAbleLs
-from mayuri.modules.helper.misc import adminlist
+from mayuri import bot, Command, AddHandler, DisableAbleLs, adminlist, admin
 from mayuri.modules.helper.string import after
 from mayuri.modules.sql import disableable as sql
 from pyrogram import filters
@@ -22,11 +21,9 @@ def disableable(func):
 
 	return decorator
 
+@admin
 async def disablehandler(client,message):
 	chat_id = message.chat.id
-	admin_list = await adminlist(client,chat_id)
-	if message.from_user.id not in admin_list:
-		return
 	text = (message.text).split()
 	if len(text) < 2:
 		await message.reply_text("Apa yang mau didisable!")
@@ -38,12 +35,9 @@ async def disablehandler(client,message):
 			sql.add_to_disableable(chat_id,command)
 			await message.reply_text("Perintah berhasil didisable!")
 
+@admin
 async def enablehandler(client,message):
 	chat_id = message.chat.id
-	admin_list = await adminlist(client,chat_id)
-	if message.from_user.id not in admin_list:
-		return
-
 	text = (message.text).split()
 	if len(text) > 1:
 		command = text[1]
@@ -54,12 +48,9 @@ async def enablehandler(client,message):
 	else:
 		await message.reply_text("Command Apa yang mau dienable?")
 
+@admin
 async def disabled_list(client,message):
 	chat_id = message.chat.id
-	admin_list = await adminlist(client,chat_id)
-	if message.from_user.id not in admin_list:
-		return
-
 	list_disabled = sql.get_disabled(chat_id)
 	if list_disabled:
 		text = "Daftar Perintah yang didisable di grup ini:"
@@ -73,7 +64,7 @@ async def disabled_list(client,message):
 async def disableable_list(client,message):
 	chat_id = message.chat.id
 	admin_list = await adminlist(client,chat_id)
-	if message.chat.type != "private" and message.from_user.id not in admin_list:
+	if message.chat.type != "private" or message.from_user.id not in admin_list:
 		return
 
 	DisableAbleLs.sort()
