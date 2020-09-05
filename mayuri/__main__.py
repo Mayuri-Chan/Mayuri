@@ -6,13 +6,24 @@ from pyrogram.handlers import MessageHandler
 from mayuri.modules import ALL_MODULES
 
 print("Mayuri is Starting...")
+
+HELP_COMMANDS = {}
+
 bot.start()
 print("Loading modules...")
+
 for module_name in ALL_MODULES:
-    imported_module = importlib.import_module("mayuri.modules." + module_name)
-    importlib.reload(imported_module)
-    if hasattr(imported_module, "__MODULE__") and imported_module.__MODULE__:
-    	imported_module.__MODULE__ = imported_module.__MODULE__
+	imported_module = importlib.import_module("mayuri.modules." + module_name)
+	if hasattr(imported_module, "__MODULE__") and imported_module.__MODULE__:
+		imported_module.__MODULE__ = imported_module.__MODULE__
+	if hasattr(imported_module, "__MODULE__") and imported_module.__MODULE__:
+		if not imported_module.__MODULE__.lower() in HELP_COMMANDS:
+			HELP_COMMANDS[imported_module.__MODULE__.lower()] = imported_module
+		else:
+			raise Exception("Can't have two modules with the same name! Please change one")
+	if hasattr(imported_module, "__HELP__") and imported_module.__HELP__:
+		HELP_COMMANDS[imported_module.__MODULE__.lower()] = imported_module
+	importlib.reload(imported_module)
 
 print("----------------------------------------------------------------")
 print(" Loaded Modules : ["+", ".join(ALL_MODULES)+"]")

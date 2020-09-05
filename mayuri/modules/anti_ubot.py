@@ -9,6 +9,38 @@ from pyrogram import filters
 from pyrogram.types import ChatPermissions
 from time import time
 
+__MODULE__ = "Blacklist Userbot"
+__HELP__ = """
+Module ini digunakan untuk melarang penggunaan perintah userbot.
+[Blacklist Userbot]
+> `/addblubot <perintah> <mode> [<waktu>]`
+Menambahkan perintah userbot ke daftar hitam
+contoh :
+> `/addblubot purgeme ban`
+> `/addblubot spam tmute 12h`
+
+> `/rmblubot <perintah>`
+Menghapus perintah userbot dari daftar hitam
+contoh :
+> `/rmblubot purgeme`
+
+> `/blubot`
+Menampilkan daftar perintah yang ada di daftar hitam
+
+[Mode]
+- kick	- tmute
+- mute	- tban
+- ban
+
+[Waktu]
+Khusus mode tmute dan tban
+daftar unit waktu :
+- s = detik
+- m = menit
+- h = jam
+- d = hari
+"""
+
 @admin
 async def addblubot(client,message):
 	chat_id = message.chat.id

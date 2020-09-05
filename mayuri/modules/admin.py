@@ -3,6 +3,13 @@ from mayuri import Command, AddHandler
 from mayuri.modules.disableable import disableable
 from pyrogram import filters
 
+__MODULE__ = "Admin List"
+__HELP__ = """
+Module ini digunakan untuk menampilkan list admin di dalam grup.
+[Admin List]
+> `/adminlist`
+"""
+
 @disableable
 async def adminlist(client,message):
 	chat_id = message.chat.id

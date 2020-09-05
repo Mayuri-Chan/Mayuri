@@ -8,6 +8,27 @@ from mayuri.modules.sql import disableable as sql
 from pyrogram import filters
 from pyrogram.handlers import MessageHandler
 
+__MODULE__ = "Disable Commands"
+__HELP__ = """
+Modul ini digunakan untuk menon-aftikan penggunaan perintah didalam grup
+[Disable Commands]
+> `/disable <perintah>`
+Untuk menonaktifkan perintah
+contoh :
+> `/disable adminlist`
+
+> `/enable <perintah>`
+Untuk mengaktifkan kembali perintah yang telah di non-aktifkan
+contoh :
+> `/enable adminlist`
+
+> `/disabled`
+Untuk menampilkan daftar perintah yang telah di non-aktifkan
+
+> `/disableable`
+Untuk menampilkan daftar perintah yang dapat di non-aktifkan
+"""
+
 def disableable(func):
 	wraps(func)
 	name = func.__name__

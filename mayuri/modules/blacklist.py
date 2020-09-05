@@ -9,6 +9,41 @@ from pyrogram import filters
 from pyrogram.types import ChatPermissions
 from time import time
 
+__MODULE__ = "Word Blacklist"
+__HELP__ = """
+Module ini digunakan untuk melarang penggunaan suatu kata dalam pesan.
+[Word Blacklist]
+> `/addbl <kata> [<mode>] [<waktu>]`
+Menambahkan kata kedalam daftar hitam
+contoh :
+> `/addbl anu`
+> `/addbl anu kick`
+> `/addbl anu tmute 12h`
+
+> `/rmbl <kata>`
+Menghapus kata dari daftar hitam
+contoh :
+> `/rmbl anu`
+
+> `/blacklist`
+Menampilkan daftar kata yang ada di daftar hitam
+
+[Mode]
+Opsional, mode defaultnya adalah delete
+- delete	- ban
+- kick		- tmute
+- mute		- tban
+
+
+[Waktu]
+Khusus mode tmute dan tban
+daftar unit waktu :
+- s = detik
+- m = menit
+- h = jam
+- d = hari
+"""
+
 @admin
 async def addbl(client,message):
 	chat_id = message.chat.id

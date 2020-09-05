@@ -2,6 +2,16 @@ from mayuri import AddHandler
 from mayuri.modules.disableable import disableable
 from pyrogram import filters
 
+__MODULE__ = "Sed"
+__HELP__ = """
+Modul ini digunakan untuk mengubah kata dalam suatu pesan
+[Sed]
+> `s/<kata asli>/<kata ganti>`
+contoh :
+> `s/anu/nganu`
+Mengubah semua kata 'anu' menjadi 'nganu' didalam pesan yang dibalas
+"""
+
 @disableable
 async def sed(client,message):
 	text = (message.text).split('/')

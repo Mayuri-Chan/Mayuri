@@ -4,6 +4,16 @@ from mayuri import Command, AddHandler
 from mayuri.modules.disableable import disableable
 from pyrogram import filters
 
+__MODULE__ = "Stickers"
+__HELP__ = """
+[Stickers]
+> `/stickerid`
+Mendapatkan id dari sticker yang dibalas
+
+> `/getsticker`
+Untuk mendapatkan sticker yang dibalas dalam bentuk gambar (png)
+"""
+
 @disableable
 async def stickerid(client,message):
 	chat_id = message.chat.id
