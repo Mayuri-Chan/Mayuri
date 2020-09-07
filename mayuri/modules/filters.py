@@ -77,6 +77,11 @@ async def addfilter(client,message):
 			filt_type = 1
 			name = extracted[0]
 			value = extracted[1]
+			text, button = parse_button(value)
+			text = text.strip()
+			if not text:
+				await message.reply_text("Anda harus menambahkan teks untuk filter ini, tidak bisa menggunakan button saja!")
+				return
 		else:
 			await message.reply_text("Anda harus memberikan reply untuk filter ini!")
 			return
