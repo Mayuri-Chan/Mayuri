@@ -3,7 +3,7 @@ import array
 from mayuri import Command, OWNER, AddHandler, adminlist, admin
 from mayuri.modules.disableable import disableable
 from mayuri.modules.helper.time import create_time
-from mayuri.modules.helper.string import after, between, split_quotes
+from mayuri.modules.helper.string import split_quotes
 from mayuri.modules.sql import blacklist as sql
 from pyrogram import filters
 from pyrogram.types import ChatPermissions
@@ -174,7 +174,6 @@ async def blacklist(client,message):
 		await message.reply_text("Tidak ada kata yang diblacklist di Grup ini!")
 
 async def bl(client,message):
-	unsafe_pattern = r'^[^/!#@\$A-Za-z]'
 	#log_id = 
 	chat_id = message.chat.id
 	user_id = message.from_user.id
@@ -231,9 +230,11 @@ async def bl(client,message):
 					trigger = data["trigger"]
 					break
 
-		else:
+		elif len(mode_list) == 1:
 			mode = mode_list[0]
 			trigger = data_list[0]["trigger"]
+		else:
+			return
 
 		if mode == 0:
 			await message.delete()
