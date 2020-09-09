@@ -32,7 +32,7 @@ async def addfilter(client,message):
 	value = ""
 	document = ""
 	document_type = 0
-	name = text[1].lower()
+	name = text[1]
 	extracted = split_quotes(name)
 	if reply:
 		if len(extracted) > 0:
@@ -133,6 +133,12 @@ async def filtr(client,message):
 	data_list = []
 	mode_list = []
 	check = sql.filter_list(chat_id)
+	mention = message.from_user.mention
+	first_name = message.from_user.first_name
+	last_name = message.from_user.last_name
+	fullname = "{} {}".format(first_name,last_name)
+	user_id = message.from_user.id
+	user_name = message.from_user.username
 	if not check:
 		return
 
@@ -147,7 +153,7 @@ async def filtr(client,message):
 				button = None
 
 			if filt.filter_type == 1:
-				await message.reply_text(text,reply_markup=button)
+				await message.reply_text(text.format(first_name=first_name,last_name=last_name,fullname=fullname,user_id=user_id,user_name=user_name,mention=mention),reply_markup=button)
 			elif filt.filter_type == 3:
 				await message.reply_sticker(filt.document)
 			elif filt.filter_type == 4:
