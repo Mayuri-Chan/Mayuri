@@ -21,7 +21,6 @@ if os.path.isfile('./mayuri/config.py'):
 	BOT_SESSION = Config.BOT_SESSION
 	TOKEN = Config.TOKEN
 	OWNER = Config.OWNER
-	SUDO = Config.SUDO
 	DATABASE_URL = Config.DATABASE_URL
 else:
 	try:
@@ -52,7 +51,6 @@ else:
 	except ValueError:
 		raise Exception('You must set OWNER')
 
-	SUDO = os.environ.get(SUDO, None) or []
 	try:
 		DATABASE_URL = os.environ.get(DATABASE_URL, None)
 	except ValueError:
@@ -88,6 +86,7 @@ def mulaisql() -> scoped_session:
 BASE = declarative_base()
 SESSION = mulaisql()
 DisableAbleLs = []
+SUDO = []
 
 def AddHandler(func,filt):
 	my_handler = MessageHandler(func,filt)
@@ -109,4 +108,14 @@ def admin(func):
 			await func(client,message)
 		else:
 			await message.reply_text("Anda bukan admin!")
+	return decorator
+
+def sudo(func):
+	wraps(func)
+	async def decorator(client,message):
+		user_id = message.from_user.id
+		if user_id not in OWNER and user_id not in SUDO:
+			return
+		else:
+			await func(client,message)
 	return decorator
