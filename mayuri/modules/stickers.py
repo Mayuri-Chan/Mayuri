@@ -5,6 +5,8 @@ import imghdr
 from mayuri import Command, AddHandler, TOKEN
 from mayuri.modules.disableable import disableable
 from pyrogram import filters
+#from pyrogram.raw.types import InputStickerSetItem, InputStickerSetShortName
+#from pyrogram.raw.functions.stickers import AddStickerToSet, CreateStickerSet
 
 from PIL import Image
 
@@ -74,7 +76,6 @@ async def kang(client,message):
 			file_id = message.reply_to_message.sticker.file_id
 		elif message.reply_to_message.photo:
 			file_id = message.reply_to_message.photo.file_id
-			print(file_id)
 		elif message.reply_to_message.document:
 			file_id = message.reply_to_message.document.file_id
 		else:
@@ -83,7 +84,7 @@ async def kang(client,message):
 		await msg.edit("Mengunduh...")
 		await client.download_media(file_id,file_name='images/kangsticker.png')
 		image_type = imghdr.what(kangsticker)
-		if image_type != 'jpeg' or image_type != 'png':
+		if image_type != 'jpeg' and image_type != 'png' and image_type != 'webp':
 			await msg.edit("Format gambar tidak didukung! ({})".format(image_type))
 			return
 		if len(args) > 1:
@@ -152,6 +153,76 @@ async def kang(client,message):
 	if os.path.isfile("images/kangsticker.png"):
 		os.remove("images/kangsticker.png")
 
+'''
+@disableable
+async def kang(client,message):
+	args = (message.text).split()
+	msg = await message.reply_text("Memproses...")
+	user = message.from_user
+	bot_username = (await client.get_me()).username
+	packname = "c" + str(user.id) + "_by_"+bot_username
+	peer_user = app.resolve_peer(user.id)
+	stickerset = InputStickerSetShortName(short_name=packname)
+	max_stickers = 120
+	kangsticker = "images/kangsticker.png"
+	if message.reply_to_message:
+		if message.reply_to_message.sticker:
+			file_id = message.reply_to_message.sticker.file_id
+		elif message.reply_to_message.photo:
+			file_id = message.reply_to_message.photo.file_id
+		elif message.reply_to_message.document:
+			file_id = message.reply_to_message.document.file_id
+		else:
+			await msg.edit("Itu tidak dapat di Kang")
+			return
+		await msg.edit("Mengunduh...")
+		await client.download_media(file_id,file_name='images/kangsticker.png')
+		image_type = imghdr.what(kangsticker)
+		if image_type != 'jpeg' and image_type != 'png' and image_type != 'webp':
+			await msg.edit("Format gambar tidak didukung! ({})".format(image_type))
+			return
+		if len(args) > 1:
+			sticker_emoji = str(args[1])
+		elif message.reply_to_message.sticker and message.reply_to_message.sticker.emoji:
+			sticker_emoji = message.reply_to_message.sticker.emoji
+		else:
+			sticker_emoji = "🤔"
+		try:
+			im = Image.open(kangsticker)
+			maxsize = (512, 512)
+			if (im.width and im.height) < 512:
+				size1 = im.width
+				size2 = im.height
+				if im.width > im.height:
+					scale = 512/size1
+					size1new = 512
+					size2new = size2 * scale
+				else:
+					scale = 512/size2
+					size1new = size1 * scale
+					size2new = 512
+				size1new = math.floor(size1new)
+				size2new = math.floor(size2new)
+				sizenew = (size1new, size2new)
+				im = im.resize(sizenew)
+			else:
+				im.thumbnail(maxsize)
+			if not message.reply_to_message.sticker:
+				im.save(kangsticker, "PNG")
+			sticker = InputStickerSetItem(document=open('images/kangsticker.png', 'rb'),emoji=sticker_emoji)
+			await app.send(AddStickerToSet(stickerset=stickerset,sticker=sticker))
+			await msg.edit("Sticker ditambahkan ke [pack](t.me/addstickers/{})\nEmojinya adalah: ```{}```".format(packname, sticker_emoji))
+		except:
+			title = "{} mayuri\'s pack".format(user.first_name)
+			await app.send(CreateStickerSet(user_id=peer_user,title=title,short_name=packname,stickers=sticker))
+			await msg.edit("Sticker pack successfully created. Get it [here](t.me/addstickers/%s)" % packname)
+	else:
+		packs = "Please reply to a sticker, or image to kang it!\nOh, by the way. here are your packs:\n"
+		packs += f"[pack](t.me/addstickers/{packname})"
+		await msg.edit(packs)
+	if os.path.isfile("images/kangsticker.png"):
+		os.remove("images/kangsticker.png")
+'''
 
 async def makepack_internal(msg, user, png_sticker, emoji, updater, packname, packnum):
 	name = user.first_name
