@@ -48,7 +48,7 @@ daftar unit waktu :
 async def addbl(client,message):
 	chat_id = message.chat.id
 	admin_list = await adminlist(client,chat_id)
-	mode_list = {'delete': 0,'mute': 1,'kick': 2,'ban': 3,'tmute': 4,'tban': 5}
+	mode_list = {'delete': 0,'tmute': 1,'mute': 2,'kick': 3,'tban': 4,'ban': 5}
 	unit_list = ['d','h','m','s']
 	text = (message.text).split(None, 1)
 	trigger = text[1].lower()
@@ -127,17 +127,17 @@ async def blacklist(client,message):
 			if trigger.mode == 0:
 				delete.append(trigger.trigger)
 			elif trigger.mode == 1:
-				mute.append(trigger.trigger)
-			elif trigger.mode == 2:
-				kick.append(trigger.trigger)
-			elif trigger.mode == 3:
-				ban.append(trigger.trigger)
-			elif trigger.mode == 4:
 				tmute.append(trigger.trigger)
 				tmute_time.append(trigger.time)
-			elif trigger.mode == 5:
+			elif trigger.mode == 2:
+				mute.append(trigger.trigger)
+			elif trigger.mode == 3:
+				kick.append(trigger.trigger)
+			elif trigger.mode == 4:
 				tban.append(trigger.trigger)
 				tban_time.append(trigger.time)
+			elif trigger.mode == 5:
+				ban.append(trigger.trigger)
 		text = "Daftar kata yang diblacklist di Grup ini:\n"
 		if len(delete) > 0:
 			text = text+"\nDelete :\n"
@@ -197,30 +197,25 @@ async def bl(client,message):
 					if trigger.mode not in mode_list:
 						mode_list.append(trigger.mode)
 				elif trigger.mode == 1:
-					mode = 2
 					data_list.append({'trigger': trigger.trigger,'mode': trigger.mode})
 					if trigger.mode not in mode_list:
 						mode_list.append(trigger.mode)
 				elif trigger.mode == 2:
-					mode = 3
-					data_list.append({'trigger': trigger.trigger,'mode': mode})
+					data_list.append({'trigger': trigger.trigger,'mode': trigger.mode})
 					if trigger.mode not in mode_list:
-						mode_list.append(mode)
+						mode_list.append(trigger.mode)
 				elif trigger.mode == 3:
-					mode = 5
-					data_list.append({'trigger': trigger.trigger,'mode': mode})
+					data_list.append({'trigger': trigger.trigger,'mode': trigger.mode})
 					if trigger.mode not in mode_list:
-						mode_list.append(mode)
+						mode_list.append(trigger.mode)
 				elif trigger.mode == 4:
-					mode = 1
-					data_list.append({'trigger': trigger.trigger,'mode': mode})
+					data_list.append({'trigger': trigger.trigger,'mode': trigger.mode})
 					if trigger.mode not in mode_list:
-						mode_list.append(mode)
+						mode_list.append(trigger.mode)
 				elif trigger.mode == 5:
-					mode = 4
-					data_list.append({'trigger': trigger.trigger,'mode': mode})
+					data_list.append({'trigger': trigger.trigger,'mode': trigger.mode})
 					if trigger.mode not in mode_list:
-						mode_list.append(mode)
+						mode_list.append(trigger.mode)
 		
 		mode_list.sort()
 		if len(mode_list) > 1:
