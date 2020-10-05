@@ -6,4 +6,4 @@ requests
 sqlalchemy
 Pillow>=4.2.0
 python-telegram-bot==11.1.0
-
+pymoe
