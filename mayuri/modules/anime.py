@@ -1,14 +1,21 @@
-import math
-import time
-import requests
-import json
 import asyncio
+import html
+import imghdr
+import json
+import math
+import os
+import pendulum
+import requests
+import time
 
+from base64 import b64encode
+from io import BytesIO, StringIO
 from mayuri import Command, AddHandler
 from mayuri.modules.disableable import disableable
+from Pymoe import Anilist
 from pyrogram import filters
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-from Pymoe import Anilist
+from urllib.parse import quote as urlencode
 
 @disableable
 async def sanime(client, message):
@@ -309,8 +316,107 @@ async def manga(client, message):
 		else:
 			await edrep(message, text=ms_g)
 
+@disableable
+async def whatanime(client,message):
+	reply = message.reply_to_message
+	if reply:
+		if reply.photo:
+			media = reply.photo
+			file_type = "image"
+		elif reply.document:
+			media = reply.document
+			file_type = "document"
+		elif reply.video:
+			media = reply.video
+			file_type = "video"
+		else:
+			await message.reply_text("Anda harus membalas pesan gambar/gif/video")
+			return
+		file_id = media.file_id
+		if file_type == "image":
+			msg = await message.reply_text("Downloading...")
+			filename = 'whatanime.png'
+			file_path = await client.download_media(file_id)
+			image_type = imghdr.what(open('images/whatanime.png', 'rb'))
+			if image_type != 'jpeg' and image_type != 'png' and image_type != 'gif':
+				await msg.edit("Format file tidak didukung! ({})".format(image_type))
+				return
+		elif file_type == "document":
+			if 'image' in media.mime_type:
+				if image_type != 'jpeg' and image_type != 'png' and image_type != 'gif':
+					await msg.edit("Format file tidak didukung! ({})".format(image_type))
+					return
+				filename = 'whatanime.png'
+				file_path = await client.download_media(file_id)
+			elif 'video' in media.mime_type:
+				filename = 'whatanime.mp4'
+				file_path = await client.download_media(file_id)
+			else:
+				await msg.edit("Format file tidak didukung! ({})".format(image_type))
+				return
+		elif file_type == 'video':
+			filename = 'whatanime.mp4'
+			file_path = await client.download_media(file_id)
+		with open(file_path, 'rb') as f:
+			content = b64encode(f.read()).decode("utf-8")
+		file = memory_file(filename, content)
+		await msg.edit("`Mencari...`")
+		url = "https://trace.moe/api/search"
+		data = {"image": file}
+		raw_resp0 = requests.post(url, data=data).json()
+		resp0 = json.dumps(raw_resp0)
+		js0 = json.loads(resp0)["docs"]
+		if not js0:
+			await msg.edit("Hasil tidak ditemukan...")
+			return
+		js0 = js0[0]
+		text = f'<b>{html.escape(js0["title_romaji"])}'
+		if js0["title_native"]:
+			text += f' ({html.escape(js0["title_native"])})'
+		text += "</b>\n"
+		if js0["episode"]:
+			text += f'<b>Episode:</b> {html.escape(str(js0["episode"]))}\n'
+		percent = round(js0["similarity"] * 100, 2)
+		text += f"<b>Similarity:</b> {percent}%\n"
+		dt0 = pendulum.from_timestamp(js0["from"])
+		dt1 = pendulum.from_timestamp(js0["to"])
+		text += "<b>At:</b> {}-{}".format(html.escape(dt0.to_time_string()),html.escape(dt1.to_time_string()))
+		url = (
+			"https://media.trace.moe/video/"
+			f'{urlencode(str(js0["anilist_id"]))}'+'/'
+			f'{urlencode(js0["filename"])}'
+			f'?t={urlencode(str(js0["at"]))}'
+			f'&token={urlencode(js0["tokenthumb"])}'
+		)
+		raw_resp1 = requests.get(url)
+		with open("preview.mp4", 'wb') as f:
+			f.write(raw_resp1.content)
+		file = open("preview.mp4", 'rb')
+		await msg.delete()
+		try:
+			await client.send_chat_action(chat_id=message.chat.id,action="upload_video")
+			await message.reply_video(video=file, caption=text)
+		except:
+			await message.reply_text("`Tidak bisa mengirim preview.`\n{}".format(text))
+		os.remove(file_path)
+		os.remove("preview.mp4")
+	else:
+		await message.reply_text("Anda harus membalas pesan gambar/gif/video")
+
+def memory_file(name=None, contents=None, *, bytes=True):
+    if isinstance(contents, str) and bytes:
+        contents = contents.encode()
+    file = BytesIO() if bytes else StringIO()
+    if name:
+        file.name = name
+    if contents:
+        file.write(contents)
+        file.seek(0)
+    return file
+
 AddHandler(sanime,filters.command("sanime", Command))
 AddHandler(airing,filters.command("airing", Command))
 AddHandler(anime,filters.command("anime", Command))
 AddHandler(character,filters.command("character", Command))
 AddHandler(manga,filters.command("manga", Command))
+AddHandler(whatanime,filters.command("whatanime", Command))
