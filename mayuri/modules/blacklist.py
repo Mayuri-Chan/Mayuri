@@ -67,7 +67,7 @@ async def addbl(client,message):
 
 	mode = mode_list[mode_raw]
 
-	if mode == 0 or mode == 1 or mode == 2 or mode == 3:
+	if mode == 0 or mode == 2 or mode == 3 or mode == 5:
 		time = 0
 		mode_text = "mode {}".format(mode_raw)
 	else:
