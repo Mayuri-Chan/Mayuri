@@ -22,6 +22,14 @@ def sudo(func):
 			await func(client,message)
 	return decorator
 
+async def sudols(client,message):
+	text = "Daftar sudo saya:"
+	for su in SUDO:
+		user = await client.get_users(su)
+		mention = user.mention
+		text += "\n - {}".format(mention)
+	await message.reply_text(text)
+
 async def add_sudo(client,message):
 	chat_id = message.chat.id
 	if message.reply_to_message:
@@ -63,3 +71,4 @@ async def rm_sudo(client,message):
 
 AddHandler(add_sudo,filters.user(OWNER) & filters.command("addsudo", Command))
 AddHandler(rm_sudo,filters.user(OWNER) & filters.command("rmsudo", Command))
+AddHandler(sudols,filters.user(OWNER) & filters.command("sudols", Command))
