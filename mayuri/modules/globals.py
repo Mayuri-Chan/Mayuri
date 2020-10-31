@@ -48,15 +48,14 @@ async def gban(client,message):
 		await message.reply_sticker("https://t.me/CactusID_OOT/116113")
 		await message.reply_text("Its Global Banning Time...")
 		msg = await client.send_message(chat_id, "Banning...")
-		all = client.iter_chat_members(chat_id, filter="administrators")
-		admin_list = []
-		async for admin in all:
-			admin_list.append(admin.user.id)
+		sql.add_to_gban(user_id,reason)
 		for chat in chat_list:
+			all = client.iter_chat_members(chat.chat_id, filter="administrators")
+			admin_list = []
+			async for admin in all:
+				admin_list.append(admin.user.id)
 			if user_id not in admin_list:
 				await client.kick_chat_member(chat.chat_id,user_id)
-
-		sql.add_to_gban(user_id,reason)
 		if reason:
 			text = "User {} telah di ban secara global\nAlasan : {}".format(mention,reason)
 		else:
@@ -82,17 +81,16 @@ async def ungban(client,message):
 			return
 
 	chat_list = sql.get_chatlist()
+	sql.rm_from_gban(user_id)
 	if chat_list:
 		msg = await client.send_message(chat_id, "Un-Banning...")
-		all = client.iter_chat_members(chat_id, filter="administrators")
-		admin_list = []
-		async for admin in all:
-			admin_list.append(admin.user.id)
 		for chat in chat_list:
+			all = client.iter_chat_members(chat.chat_id, filter="administrators")
+			admin_list = []
+			async for admin in all:
+				admin_list.append(admin.user.id)
 			if user_id not in admin_list:
 				await client.unban_chat_member(chat.chat_id,user_id)
-
-		sql.rm_from_gban(user_id)
 		text = "User {} telah di unban secara global".format(mention)
 		await msg.edit(text)
 
@@ -149,19 +147,18 @@ async def gmute(client,message):
 		await message.reply_text("Orang ini adalah Master saya, saya tidak akan melakukan apapun terhadap dia!")
 		return
 	chat_list = sql.get_chatlist()
+	sql.add_to_gmute(user_id,reason)
 	if chat_list:
 		await message.reply_sticker("https://t.me/CactusID_OOT/116113")
 		await message.reply_text("Its Global Muting Time...")
 		msg = await client.send_message(chat_id, "Membisukan...")
-		all = client.iter_chat_members(chat_id, filter="administrators")
-		admin_list = []
-		async for admin in all:
-			admin_list.append(admin.user.id)
 		for chat in chat_list:
+			all = client.iter_chat_members(chat.chat_id, filter="administrators")
+			admin_list = []
+			async for admin in all:
+				admin_list.append(admin.user.id)
 			if user_id not in admin_list:
 				await client.restrict_chat_member(chat.chat_id,user_id, ChatPermissions())
-
-		sql.add_to_gmute(user_id,reason)
 		if reason:
 			text = "User {} telah di mute secara global\nAlasan : {}".format(mention,reason)
 		else:
@@ -187,18 +184,17 @@ async def ungmute(client,message):
 			return
 
 	chat_list = sql.get_chatlist()
+	sql.rm_from_gmute(user_id)
 	if chat_list:
 		msg = await client.send_message(chat_id, "Menyuarakan...")
-		all = client.iter_chat_members(chat_id, filter="administrators")
-		admin_list = []
-		async for admin in all:
-			admin_list.append(admin.user.id)
 		for chat in chat_list:
+			all = client.iter_chat_members(chat.chat_id, filter="administrators")
+			admin_list = []
+			async for admin in all:
+				admin_list.append(admin.user.id)
 			if user_id not in admin_list:
-				curr = (await client.get_chat(chat_id)).permissions
+				curr = (await client.get_chat(chat.chat_id)).permissions
 				await client.restrict_chat_member(chat.chat_id,user_id, curr)
-
-		sql.rm_from_gmute(user_id)
 		text = "User {} telah di unmute secara global".format(mention)
 		await msg.edit(text)
 
