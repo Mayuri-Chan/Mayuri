@@ -1,1 +1,1 @@
-python3 -m mayuri
+worker: python3 -m mayuri
