@@ -5,4 +5,4 @@ class Config(object):
 	BOT_SESSION = "" # generate using session_maker.py
 	TOKEN = "" # bot token from https://t.me/BotFather
 	OWNER = [864824682] # Your telegram id, you can set more than one, use comma (,) for separator
-	DATABASE_URL = "postgres://postgres:password@localhost:5432/db" # Your database URI
+	DATABASE_URL = "postgresql://postgres:password@localhost:5432/db" # Your database URI
