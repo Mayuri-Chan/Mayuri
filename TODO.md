@@ -8,5 +8,5 @@
 - [ ] Logs  
 - [ ] Rules   
 - [ ] Setup Tutorial  
-- [ ] Sticker Blacklist  
+- [X] Sticker Blacklist  
 - [ ] Warns  
