@@ -8,9 +8,10 @@ from pyrogram.types import ChatPermissions
 
 async def addchat(client,message):
 	chat_id = message.chat.id
+	chat_name = message.chat.username
 	chat_list = sql.get_chatlist()
 	if not sql.check_chatlist(chat_id):
-		sql.add_to_chatlist(chat_id)
+		sql.add_to_chatlist(chat_id,chat_name)
 
 @sudo
 async def gban(client,message):
@@ -45,20 +46,20 @@ async def gban(client,message):
 		return
 	chat_list = sql.get_chatlist()
 	if chat_list:
-		await message.reply_sticker("https://t.me/CactusID_OOT/116113")
+		await message.reply_sticker("CAADBQADTwEAAmotjDNdb-SGNzP8rxYE")
 		await message.reply_text("Its Global Banning Time...")
 		msg = await client.send_message(chat_id, "Banning...")
 		sql.add_to_gban(user_id,reason)
 		for chat in chat_list:
 			try:
-				all = client.iter_chat_members(chat.chat_id, filter="administrators")
+				all = client.iter_chat_members(chat.chat_name, filter="administrators")
 				admin_list = []
 				async for admin in all:
 					admin_list.append(admin.user.id)
 					if user_id not in admin_list:
-						await client.kick_chat_member(chat.chat_id,user_id)
+						await client.kick_chat_member(chat.chat_name,user_id)
 			except RPCError as e:
-				print(e)
+				print("{} | {}".format(e,chat.chat_name))
 		if reason:
 			text = "User {} telah di ban secara global\nAlasan : {}".format(mention,reason)
 		else:
@@ -89,14 +90,14 @@ async def ungban(client,message):
 		msg = await client.send_message(chat_id, "Un-Banning...")
 		for chat in chat_list:
 			try:
-				all = client.iter_chat_members(chat.chat_id, filter="administrators")
+				all = client.iter_chat_members(chat.chat_name, filter="administrators")
 				admin_list = []
 				async for admin in all:
 					admin_list.append(admin.user.id)
 					if user_id not in admin_list:
-						await client.unban_chat_member(chat.chat_id,user_id)
+						await client.unban_chat_member(chat.chat_name,user_id)
 			except RPCError as e:
-				print(e)
+				print("{} | {}".format(e,chat.chat_name))
 		text = "User {} telah di unban secara global".format(mention)
 		await msg.edit(text)
 
@@ -117,7 +118,7 @@ async def check_gban(client,message):
 	if check:
 		text = "User {} ada daftar global ban dan telah di banned dari grup!".format(mention)
 		if check.reason:
-			text += "\nAlasan : {}".format(reason)
+			text += "\nAlasan : {}".format(check.reason)
 		await client.kick_chat_member(chat_id,user_id)
 		await client.send_message(chat_id,text)
 
@@ -155,19 +156,19 @@ async def gmute(client,message):
 	chat_list = sql.get_chatlist()
 	sql.add_to_gmute(user_id,reason)
 	if chat_list:
-		await message.reply_sticker("https://t.me/CactusID_OOT/116113")
+		await message.reply_sticker("CAADBQADTwEAAmotjDNdb-SGNzP8rxYE")
 		await message.reply_text("Its Global Muting Time...")
 		msg = await client.send_message(chat_id, "Membisukan...")
 		for chat in chat_list:
 			try:
-				all = client.iter_chat_members(chat.chat_id, filter="administrators")
+				all = client.iter_chat_members(chat.chat_name, filter="administrators")
 				admin_list = []
 				async for admin in all:
 					admin_list.append(admin.user.id)
 					if user_id not in admin_list:
-						await client.restrict_chat_member(chat.chat_id,user_id, ChatPermissions())
+						await client.restrict_chat_member(chat.chat_name,user_id, ChatPermissions())
 			except RPCError as e:
-				print(e)
+				print("{} | {}".format(e,chat.chat_name))
 		if reason:
 			text = "User {} telah di mute secara global\nAlasan : {}".format(mention,reason)
 		else:
@@ -198,15 +199,15 @@ async def ungmute(client,message):
 		msg = await client.send_message(chat_id, "Menyuarakan...")
 		for chat in chat_list:
 			try:
-				all = client.iter_chat_members(chat.chat_id, filter="administrators")
+				all = client.iter_chat_members(chat.chat_name, filter="administrators")
 				admin_list = []
 				async for admin in all:
 					admin_list.append(admin.user.id)
 					if user_id not in admin_list:
-						curr = (await client.get_chat(chat.chat_id)).permissions
-						await client.restrict_chat_member(chat.chat_id,user_id, curr)
+						curr = (await client.get_chat(chat.chat_name)).permissions
+						await client.restrict_chat_member(chat.chat_name,user_id, curr)
 			except RPCError as e:
-				print(e)
+				print("{} | {}".format(e,chat.chat_name))
 		text = "User {} telah di unmute secara global".format(mention)
 		await msg.edit(text)
 
@@ -227,8 +228,8 @@ async def check_gmute(client,message):
 	if check:
 		text = "User {} ada daftar global mute dan telah di bisukan!".format(mention)
 		if check.reason:
-			text += "\nAlasan : {}".format(reason)
-		await client.restrict_chat_member(chat.chat_id,user_id, ChatPermissions())
+			text += "\nAlasan : {}".format(check.reason)
+		await client.restrict_chat_member(chat.chat_name,user_id, ChatPermissions())
 		await client.send_message(chat_id,text)
 
 AddHandler(gban,filters.group & filters.command("gban", Command))

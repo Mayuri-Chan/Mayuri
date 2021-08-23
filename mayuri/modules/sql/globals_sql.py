@@ -5,10 +5,12 @@ from sqlalchemy import Column, Integer, String, UnicodeText
 
 class Chat(BASE):
 	__tablename__ = "chat_list"
-	chat_id = Column(String(15), primary_key=True)
+	chat_id = Column(String(15))
+	chat_name = Column(String(50), primary_key=True)
 
-	def __init__(self,chat_id):
+	def __init__(self,chat_id,chat_name):
 		self.chat_id = str(chat_id)
+		self.chat_name = str(chat_name)
 
 	def __repr__(self):
 		return "<Global chat for %s>" % (self.chat_id)
@@ -42,9 +44,9 @@ Gban.__table__.create(checkfirst=True)
 Gmute.__table__.create(checkfirst=True)
 CHAT_INSERTION_LOCK = threading.RLock()
 
-def add_to_chatlist(chat_id):
+def add_to_chatlist(chat_id,chat_name):
 	with CHAT_INSERTION_LOCK:
-		chat_filt = Chat(chat_id)
+		chat_filt = Chat(chat_id,chat_name)
 		SESSION.merge(chat_filt)
 		SESSION.commit()
 
@@ -79,7 +81,7 @@ def check_gban(user_id):
 
 def rm_from_gban(user_id):
 	with CHAT_INSERTION_LOCK:
-		curr = SESSION.query(Gmute).get(user_id)
+		curr = SESSION.query(Gban).get(user_id)
 		if curr:
 			SESSION.delete(curr)
 			SESSION.commit()
