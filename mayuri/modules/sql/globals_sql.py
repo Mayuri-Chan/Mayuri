@@ -1,7 +1,7 @@
 import threading
 
 from mayuri import OWNER, BASE, SESSION
-from sqlalchemy import Column, Integer, String, UnicodeText
+from sqlalchemy import Column, BigInteger, String, UnicodeText
 
 class Chat(BASE):
 	__tablename__ = "chat_list"
@@ -17,7 +17,7 @@ class Chat(BASE):
 
 class Gban(BASE):
 	__tablename__ = "gban_list"
-	user_id = Column(Integer, primary_key=True)
+	user_id = Column(BigInteger, primary_key=True)
 	reason = Column(UnicodeText)
 
 	def __init__(self,user_id,reason):
@@ -29,7 +29,7 @@ class Gban(BASE):
 
 class Gmute(BASE):
 	__tablename__ = "gmute_list"
-	user_id = Column(Integer, primary_key=True)
+	user_id = Column(BigInteger, primary_key=True)
 	reason = Column(UnicodeText)
 
 	def __init__(self,user_id,reason):

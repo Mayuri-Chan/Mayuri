@@ -1,11 +1,11 @@
 import threading
 
 from mayuri import OWNER, BASE, SESSION
-from sqlalchemy import Column, Integer
+from sqlalchemy import Column, BigInteger
 
 class Sudo(BASE):
 	__tablename__ = "sudo_list"
-	user_id = Column(Integer, primary_key=True)
+	user_id = Column(BigInteger, primary_key=True)
 
 	def __init__(self,user_id):
 		self.user_id = str(user_id)
