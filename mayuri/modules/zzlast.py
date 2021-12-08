@@ -9,6 +9,18 @@ from mayuri.modules.globals import addchat, check_gban, check_gmute
 from pyrogram import filters
 
 async def last(client,message):
+	if message.sender_chat:
+		curr_chat = await client.get_chat(message.chat.id)
+		if curr_chat.linked_chat:
+			if message.sender_chat.id == curr_chat.linked_chat.id:
+				return
+			else:
+				await message.delete()
+				return
+		else:
+			await message.delete()
+			return
+
 	await addchat(client,message)
 	await check_gban(client,message)
 	await check_gmute(client,message)
