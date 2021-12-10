@@ -6,3 +6,4 @@ class Config(object):
 	TOKEN = "" # bot token from https://t.me/BotFather
 	OWNER = [864824682] # Your telegram id, you can set more than one, use comma (,) for separator
 	DATABASE_URL = "postgresql://postgres:password@localhost:5432/db" # Your database URI
+	log_chat = -123456 # Dummy channel or groups for store kanged sticker

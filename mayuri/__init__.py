@@ -22,6 +22,7 @@ if os.path.isfile('./mayuri/config.py'):
 	TOKEN = Config.TOKEN
 	OWNER = Config.OWNER
 	DATABASE_URL = Config.DATABASE_URL
+	log_chat = Config.log_chat
 else:
 	try:
 		API_ID = os.environ.get(API_ID, None)
@@ -55,6 +56,8 @@ else:
 		DATABASE_URL = os.environ.get(DATABASE_URL, None)
 	except ValueError:
 		raise Exception('You must set DATABASE_URL')
+
+	log_chat = os.environ.get(log_chat, None)
 
 if BOT_SESSION != '':
 	bot = Client(
