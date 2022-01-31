@@ -57,7 +57,7 @@ async def gban(client,message):
 				async for admin in all:
 					admin_list.append(admin.user.id)
 					if user_id not in admin_list:
-						await client.kick_chat_member(chat.chat_name,user_id)
+						await client.ban_chat_member(chat.chat_name,user_id)
 			except RPCError as e:
 				print("{} | {}".format(e,chat.chat_name))
 		if reason:
@@ -119,7 +119,7 @@ async def check_gban(client,message):
 		text = "User {} ada daftar global ban dan telah di banned dari grup!".format(mention)
 		if check.reason:
 			text += "\nAlasan : {}".format(check.reason)
-		await client.kick_chat_member(chat_id,user_id)
+		await client.ban_chat_member(chat_id,user_id)
 		await client.send_message(chat_id,text)
 
 @sudo

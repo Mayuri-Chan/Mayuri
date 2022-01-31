@@ -21,7 +21,7 @@ async def zombies(client,message):
 	else:
 		await msg.edit("Ditemukan {} akun terhapus.\nMembersihan...".format(count))
 		for user in users:
-			await client.kick_chat_member(chat_id,user)
+			await client.ban_chat_member(chat_id,user)
 		await msg.edit("Berhasil membersihkan {} akun terhapus".format(count))
 
 AddHandler(zombies,filters.group & filters.command("zombies", Command))

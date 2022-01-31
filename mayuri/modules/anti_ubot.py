@@ -170,14 +170,14 @@ async def bl_ubot(client,message):
 				#await client.send_message(log_id,"#UBOT_MUTE\n{}\nUser : {}\nAlasan : Mengatakan {}{}".format(chat_title,mention,first,command))
 			elif check.mode == 2:
 				await message.delete()
-				await client.kick_chat_member(chat_id,user_id)
+				await client.ban_chat_member(chat_id,user_id)
 				await client.unban_chat_member(chat_id,user_id)
 				await message.reply_sticker("https://t.me/CactusID_OOT/116113")
 				await message.reply_text("Ditendang! 😝\nUser : {}\nAlasan : Mengatakan {}{}".format(mention,first,command))
 				#await client.send_message(log_id,"#UBOT_TENDANG\n{}\nUser : {}\nAlasan : Mengatakan {}{}".format(chat_title,mention,first,command))
 			elif check.mode == 3:
 				await message.delete()
-				await client.kick_chat_member(chat_id,user_id)
+				await client.ban_chat_member(chat_id,user_id)
 				await message.reply_sticker("https://t.me/CactusID_OOT/116113")
 				await message.reply_text("Terbanned! 😝\nUser : {}\nAlasan : Mengatakan {}{}".format(mention,first,command))
 				#await client.send_message(log_id,"#UBOT_BAN\n{}\nUser : {}\nAlasan : Mengatakan {}{}".format(chat_title,mention,first,command))
@@ -188,7 +188,7 @@ async def bl_ubot(client,message):
 				#await client.send_message(log_id,"#UBOT_TMUTE\n{}\nUser : {}\nDurasi : {}\nAlasan : Mengatakan {}{}".format(chat_title,mention,time_raw,first,command))
 			elif check.mode == 5:
 				await message.delete()
-				await client.kick_chat_member(chat_id,user_id, time)
+				await client.ban_chat_member(chat_id,user_id, time)
 				await message.reply_sticker("https://t.me/CactusID_OOT/116113")
 				await message.reply_text("Terbanned untuk {}! 😝\nUser : {}\nAlasan : Mengatakan {}{}".format(time_raw,mention,first,command))
 				#await client.send_message(log_id,"#UBOT_TBAN\n{}\nUser : {}\nDurasi : {}\nAlasan : Mengatakan {}{}".format(chat_title,mention,time_raw,first,command))

@@ -254,20 +254,20 @@ async def blpack(client,message):
 			#await client.send_message(log_id,"#BLACKLIST_MUTE\n{}\nUser : {}\nAlasan : Mengirimkan sticker yang ada di pack <code>{}</code>".format(chat_title,mention,packname))
 		elif mode == 3:
 			await message.delete()
-			await client.kick_chat_member(chat_id,user_id)
+			await client.ban_chat_member(chat_id,user_id)
 			await client.unban_chat_member(chat_id,user_id)
 			await message.reply_sticker("https://t.me/CactusID_OOT/116113")
 			await message.reply_text("Ditendang! 😝\nUser : {}\nAlasan : Mengirimkan sticker yang ada di pack <code>{}</code>".format(mention,packname),disable_web_page_preview=True)
 			#await client.send_message(log_id,"#BLACKLIST_KICK\n{}\nUser : {}\nAlasan : Mengirimkan sticker yang ada di pack <code>{}</code>".format(chat_title,mention,packname))
 		elif mode == 4:
 			await message.delete()
-			await client.kick_chat_member(chat_id,user_id, time)
+			await client.ban_chat_member(chat_id,user_id, time)
 			await message.reply_sticker("https://t.me/CactusID_OOT/116113")
 			await message.reply_text("Terbanned untuk {}! 😝\nUser : {}\nAlasan : Mengirimkan sticker yang ada di pack <code>{}</code>".format(time_raw,mention,packname),disable_web_page_preview=True)
 			#await client.send_message(log_id,"#BLACKLIST_TBAN\n{}\nUser : {}\nDurasi : {}\nAlasan : Mengirimkan sticker yang ada di pack <code>{}</code>".format(chat_title,mention,time_raw,packname))
 		elif mode == 5:
 			await message.delete()
-			await client.kick_chat_member(chat_id,user_id)
+			await client.ban_chat_member(chat_id,user_id)
 			await message.reply_sticker("https://t.me/CactusID_OOT/116113")
 			await message.reply_text("Terbanned! 😝\nUser : {}\nAlasan : Mengirimkan sticker yang ada di pack <code>{}</code>".format(mention,packname),disable_web_page_preview=True)
 			#await client.send_message(log_id,"#BLACKLIST_BAN\n{}\nUser : {}\nAlasan : Mengirimkan sticker yang ada di pack <code>{}</code>".format(chat_title,mention,packname))
