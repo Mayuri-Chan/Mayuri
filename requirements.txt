@@ -1,0 +1,4 @@
+psycopg2-binary
+pyrogram
+sqlalchemy
+tgcrypto

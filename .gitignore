@@ -1,0 +1,6 @@
+*.session
+mayuri/config.py
+mayuri/__pycache__
+mayuri/plugins/__pycache__
+mayuri/utils/__pycache__
+mayuri/db/__pycache__
