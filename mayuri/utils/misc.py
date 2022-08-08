@@ -1,5 +1,10 @@
+import httpx
+import re
 from mayuri.utils.lang import tl
+from pyrogram import emoji
 from pyrogram.types import InlineKeyboardButton
+
+_EMOJI_REGEXP = None
 
 class EqInlineKeyboardButton(InlineKeyboardButton):
     def __eq__(self, other):
@@ -34,3 +39,24 @@ async def paginate_plugins(_page_n, plugin_dict, prefix, chat_id, chat=None):
         pairs.append((plugins[-1],))
 
     return pairs
+
+def get_emoji_regex():
+    global _EMOJI_REGEXP
+    if not _EMOJI_REGEXP:
+        e_list = [
+            getattr(emoji, e).encode("unicode-escape").decode("ASCII")
+            for e in dir(emoji)
+            if not e.startswith("_")
+        ]
+        # to avoid re.error excluding char that start with '*'
+        e_sort = sorted([x for x in e_list if not x.startswith("*")], reverse=True)
+        # Sort emojis by length to make sure multi-character emojis are
+        # matched first
+        pattern_ = f"({'|'.join(e_sort)})"
+        _EMOJI_REGEXP = re.compile(pattern_)
+    return _EMOJI_REGEXP
+
+
+EMOJI_PATTERN = get_emoji_regex()
+timeout = httpx.Timeout(40, pool=None)
+http = httpx.AsyncClient(http2=True, timeout=timeout)

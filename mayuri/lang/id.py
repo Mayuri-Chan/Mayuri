@@ -38,9 +38,18 @@ Mendapatkan id dari sticker yang dibalas
 
 > `/getsticker`
 Untuk mendapatkan sticker yang dibalas dalam bentuk gambar/video (png/webm)
+
+> `/kang`
+Untuk mencuri sticker.
 	""",
 	'your_stickerid': "Id sticker yang anda balas :\n{}",
 	'must_reply_to_sticker': "Anda harus membalas pesan sticker untuk menggunakan perintah ini!",
 	'animated_not_supported': "Stiker animasi tidak didukung!",
 	'use_whisely': "Gunakan fitur ini dengan bijak!\nSilahkan cek gambar dibawah ini :)",
+	'processing': "Memproses...",
+	'cannot_kang': "Itu tidak dapat di Kang!",
+	'creating_pack': "Membuat Stickerpack...",
+	'cannot_create_pack': "Terjadi kesalahan saat membuat Stickerpack!",
+	'show_pack': "Lihat Stickerpack",
+	'sticker_kanged': "Sticker berhasil dikang.",
 }

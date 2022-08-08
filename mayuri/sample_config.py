@@ -6,3 +6,4 @@ class Config(object):
 	DATABASE_URL = "postgresql://postgres:password@localhost:5172/db" # Your database URI
 	WORKERS = 6
 	CUSTOM_PREFIXS = ['/', '$']
+	LOG_CHAT = -1001233232

@@ -1,3 +1,5 @@
+httpx[http2]
+opencv-python
 psycopg2-binary
 pyrogram
 sqlalchemy
