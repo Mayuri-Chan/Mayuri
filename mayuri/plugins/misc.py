@@ -8,6 +8,10 @@ from mayuri.utils.lang import tl
 from mayuri.utils.misc import paginate_plugins
 from pyrogram import enums, filters, __version__
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from re import IGNORECASE, I, match, sub
+from sre_constants import error as sre_err
+
+DELIMITERS = ("/", ":", "|", "_")
 
 @Mayuri.on_message(filters.command("alive", PREFIX) | filters.command("on", PREFIX) & sudo_only)
 async def alive(c, m):
@@ -72,3 +76,87 @@ async def help_button(c, q):
 	elif back_match:
 		await q.message.edit(text=(await tl(chat_id, "HELP_STRINGS")).format(", ".join(PREFIX)),
 			reply_markup=InlineKeyboardMarkup(await paginate_plugins(0, HELP_COMMANDS, "help", chat_id)))
+
+def separate_sed(sed_string):
+	if (
+		len(sed_string) > 2
+		and sed_string[1] in DELIMITERS
+		and sed_string.count(sed_string[1]) >= 2
+	):
+		delim = sed_string[1]
+		start = counter = 2
+		while counter < len(sed_string):
+			if sed_string[counter] == '\\':
+				counter += 1
+
+			elif sed_string[counter] == delim:
+				replace = sed_string[start:counter]
+				counter += 1
+				start = counter
+				break
+
+			counter += 1
+
+		else:
+			return None
+
+		while counter < len(sed_string):
+			if (
+				sed_string[counter] == '\\'
+				and counter + 1 < len(sed_string)
+				and sed_string[counter + 1] == delim
+			):
+				sed_string = sed_string[:counter] + sed_string[counter + 1 :]
+
+			elif sed_string[counter] == delim:
+				replace_with = sed_string[start:counter]
+				counter += 1
+				break
+
+			counter += 1
+		else:
+			return replace, sed_string[start:], ''
+
+		flags = ''
+		if counter < len(sed_string):
+			flags = sed_string[counter:]
+		return replace, replace_with, flags.lower()
+	return None
+
+@Mayuri.on_message(filters.reply & filters.regex('^s/(.*?)'), group=101)
+async def sed(c,m):
+	"""For sed command, use sed on Telegram."""
+	sed_result = separate_sed(m.text or m.caption)
+	textx = m.reply_to_message
+	if sed_result:
+		if textx:
+			to_fix = textx.text
+		else:
+			return await m.reply_text(
+				"`Master, I don't have brains. Well you too don't I guess.`"
+			)
+
+		repl, repl_with, flags = sed_result
+
+		if not repl:
+			return await m.reply_text(
+				"`Master, I don't have brains. Well you too don't I guess.`"
+			)
+
+		try:
+			check = match(repl, to_fix, flags=IGNORECASE)
+			if check and check.group(0).lower() == to_fix.lower():
+				return await m.reply_text("`Boi!, that's a reply. Don't use sed`")
+
+			if "i" in flags and "g" in flags:
+				text = sub(repl, repl_with, to_fix, flags=I).strip()
+			elif "i" in flags:
+				text = sub(repl, repl_with, to_fix, count=1, flags=I).strip()
+			elif "g" in flags:
+				text = sub(repl, repl_with, to_fix).strip()
+			else:
+				text = sub(repl, repl_with, to_fix, count=1).strip()
+		except sre_err:
+			return await m.reply_text("B O I! [Learn Regex](https://regexone.com)")
+		if text:
+			await m.reply_text(text)
