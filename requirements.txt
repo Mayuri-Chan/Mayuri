@@ -1,7 +1,9 @@
 httpx[http2]
 opencv-python
+pendulum
 psycopg2-binary
 pymoe
 pyrogram
+requests
 sqlalchemy
 tgcrypto

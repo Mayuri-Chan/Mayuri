@@ -1,5 +1,12 @@
+import html
+import imghdr
+import json
+import os
+import pendulum
 import requests
 
+from base64 import b64encode
+from io import BytesIO, StringIO
 from mayuri import PREFIX
 from mayuri.mayuri import Mayuri
 #from mayuri.utils.lang import tl
@@ -7,6 +14,7 @@ from Pymoe import Anilist
 from pyrogram import filters
 from pyrogram.errors import RPCError
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from urllib.parse import quote as urlencode
 
 @Mayuri.on_message(filters.command("sanime", PREFIX))
 async def sanime(c, m):
@@ -308,3 +316,101 @@ async def manga(c, m):
 				await m.reply_text(m, text=ms_g)
 		else:
 			await m.reply_text(m, text=ms_g)
+
+@Mayuri.on_message(filters.command("whatanime", PREFIX))
+async def whatanime(c,m):
+	reply = m.reply_to_message
+	if reply:
+		if reply.photo:
+			media = reply.photo
+			file_type = "image"
+		elif reply.document:
+			media = reply.document
+			file_type = "document"
+		elif reply.video:
+			media = reply.video
+			file_type = "video"
+		else:
+			await m.reply_text("Anda harus membalas pesan gambar/gif/video")
+			return
+		file_id = media.file_id
+		if file_type == "image":
+			msg = await m.reply_text("Downloading...")
+			filename = 'whatanime.png'
+			file_path = await c.download_media(file_id)
+			image_type = imghdr.what(open('images/whatanime.png', 'rb'))
+			if image_type != 'jpeg' and image_type != 'png' and image_type != 'gif':
+				await msg.edit("Format file tidak didukung! ({})".format(image_type))
+				return
+		elif file_type == "document":
+			if 'image' in media.mime_type:
+				if image_type != 'jpeg' and image_type != 'png' and image_type != 'gif':
+					await msg.edit("Format file tidak didukung! ({})".format(image_type))
+					return
+				filename = 'whatanime.png'
+				file_path = await c.download_media(file_id)
+			elif 'video' in media.mime_type:
+				filename = 'whatanime.mp4'
+				file_path = await c.download_media(file_id)
+			else:
+				await msg.edit("Format file tidak didukung! ({})".format(image_type))
+				return
+		elif file_type == 'video':
+			filename = 'whatanime.mp4'
+			file_path = await c.download_media(file_id)
+		with open(file_path, 'rb') as f:
+			content = b64encode(f.read()).decode("utf-8")
+		file = memoryfile(filename, content)
+		await msg.edit("`Mencari...`")
+		url = "https://trace.moe/api/search"
+		data = {"image": file}
+		raw_resp0 = requests.post(url, data=data).json()
+		resp0 = json.dumps(raw_resp0)
+		js0 = json.loads(resp0)["docs"]
+		if not js0:
+			await msg.edit("Hasil tidak ditemukan...")
+			return
+		js0 = js0[0]
+		text = f'<b>{html.escape(js0["title_romaji"])}'
+		if js0["title_native"]:
+			text += f' ({html.escape(js0["title_native"])})'
+		text += "</b>\n"
+		if js0["episode"]:
+			text += f'<b>Episode:</b> {html.escape(str(js0["episode"]))}\n'
+		percent = round(js0["similarity"] * 100, 2)
+		text += f"<b>Similarity:</b> {percent}%\n"
+		dt0 = pendulum.from_timestamp(js0["from"])
+		dt1 = pendulum.from_timestamp(js0["to"])
+		text += "<b>At:</b> {}-{}".format(html.escape(dt0.to_time_string()),html.escape(dt1.to_time_string()))
+		url = (
+			"https://media.trace.moe/video/"
+			f'{urlencode(str(js0["anilist_id"]))}'+'/'
+			f'{urlencode(js0["filename"])}'
+			f'?t={urlencode(str(js0["at"]))}'
+			f'&token={urlencode(js0["tokenthumb"])}'
+		)
+		raw_resp1 = requests.get(url)
+		with open("preview.mp4", 'wb') as f:
+			f.write(raw_resp1.content)
+		file = open("preview.mp4", 'rb')
+		await msg.delete()
+		try:
+			await c.send_chat_action(chat_id=m.chat.id,action="upload_video")
+			await m.reply_video(video=file, caption=text)
+		except RPCError:
+			await m.reply_text("`Tidak bisa mengirim preview.`\n{}".format(text))
+		os.remove(file_path)
+		os.remove("preview.mp4")
+	else:
+		await m.reply_text("Anda harus membalas pesan gambar/gif/video")
+
+def memoryfile(name=None, contents=None, *, bytess=True):
+	if isinstance(contents, str) and bytess:
+		contents = contents.encode()
+	file = BytesIO() if bytess else StringIO()
+	if name:
+		file.name = name
+	if contents:
+		file.write(contents)
+		file.seek(0)
+	return file
