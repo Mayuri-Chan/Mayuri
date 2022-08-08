@@ -97,4 +97,25 @@ daftar unit waktu :
 	'blacklist_for': " selama {}",
 	'user_and_reason': "\nUser : {}\nAlasan :",
 	'blacklist_said': " Mengatakan <code>{}</code>",
+	'filters': "Filters",
+	'filters_help': """
+Module ini digunakan untuk membuat reply otomatis untuk suatu kata.
+[Filters]
+> `/filter <kata> <balasan`
+Menambahkan filter baru
+
+> `/stop <kata>`
+Menghapus filter
+
+> `/filters`
+Mendapatkan daftar filter aktif
+	""",
+	'give_filter_name': "Anda harus memberikan nama untuk filter ini!",
+	'give_filter_text': "Anda harus menambahkan teks untuk filter ini, tidak bisa menggunakan button saja!",
+	'filter_added': "Handler <code>{}</code> Telah ditambahkan di {}",
+	'filter_removed': "Saya akan berhenti membalas <code>{}</code> di {}!",
+	'filter_not_found': "<code>{}</code> Bukan filter aktif!",
+	'what_filter_to_remove': "Apa yang mau dihapus dari filter?",
+	'filter_list': "Daftar filters di Grup ini:\n",
+	'no_filter_found': "Tidak ada filters di {}!",
 }
