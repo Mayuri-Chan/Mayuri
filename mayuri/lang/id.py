@@ -8,6 +8,10 @@ text = {
 	'this_plugin_help': "Ini adalah bantuan untuk plugin **{}**:\n",
 	'back': "Kembali",
 	'refreshing_admin': "Merefresh cache admin...",
+	'search_zombies': "Mencari akun terhapus...",
+	'no_zombies': "Grup bersih. tidak ada akun terhapus :)",
+	'found_zombies': "Ditemukan {} akun terhapus.\nMembersihan...",
+	'zombies_cleaned': "Berhasil membersihkan {} akun terhapus",
 	'admin': "Admin",
 	'admin_help': """
 Module ini digunakan untuk menampilkan list admin di dalam grup.
@@ -16,6 +20,8 @@ Module ini digunakan untuk menampilkan list admin di dalam grup.
 Melihat daftar admin.
 > `/admincache`
 Memperbaharui daftar admin.
+> `/zombies`
+Mencari dan membersihkan akun terhapus.
 	""",
 	'admin_refreshed': "Cache admin berhasil direfresh.",
 	'HELP_STRINGS': """

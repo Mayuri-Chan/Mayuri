@@ -49,3 +49,32 @@ async def admincache(c,m):
 		await sql.add_admin_to_list(chat_id,admin.user.id,admin.user.username)
 	sql.update_last_sync(chat_id,current_time)
 	await r.edit(await tl(chat_id, "admin_refreshed"))
+
+async def zombies_task(c,m):
+	chat_id = m.chat.id
+	msg = await m.reply_text(await tl(chat_id, "search_zombies"))
+	await m.delete()
+	count = 0
+	users = []
+	try:
+		chat_members = c.get_chat_members(chat_id)
+	except FloodWait as e:
+		await asyncio.sleep(e.value)
+	async for member in chat_members:
+		if member.user.is_deleted and not await check_admin(chat_id, member.user.id):
+			count = count+1
+			users.append(member.user.id)
+
+	if count == 0:
+		await msg.edit(await tl(chat_id, "no_zombies"))
+	else:
+		await msg.edit((await tl(chat_id, "found_zombies")).format(count))
+		for user in users:
+			await c.ban_chat_member(chat_id,user)
+		await msg.edit((await tl(chat_id, "zombies_cleaned")).format(count))
+	await asyncio.sleep(2)
+	await msg.delete()
+
+@Mayuri.on_message(filters.command("zombies", PREFIX) & admin_only)
+async def zombies(c,m):
+	asyncio.create_task(zombies_task(c,m))
