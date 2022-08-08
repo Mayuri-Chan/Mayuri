@@ -4,6 +4,7 @@ pendulum
 psycopg2-binary
 pymoe
 pyrogram
+pytesseract
 requests
 sqlalchemy
 tgcrypto

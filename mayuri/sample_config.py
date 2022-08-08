@@ -7,3 +7,4 @@ class Config(object):
 	WORKERS = 6
 	CUSTOM_PREFIXS = ['/', '$']
 	LOG_CHAT = -1001233232
+	USE_OCR = False

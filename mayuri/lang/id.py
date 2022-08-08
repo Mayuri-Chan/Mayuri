@@ -52,4 +52,49 @@ Untuk mencuri sticker.
 	'cannot_create_pack': "Terjadi kesalahan saat membuat Stickerpack!",
 	'show_pack': "Lihat Stickerpack",
 	'sticker_kanged': "Sticker berhasil dikang.",
+	'blacklist': "Daftar hitam",
+	'blacklist_help': """Module ini digunakan untuk melarang penggunaan suatu kata dalam pesan.
+[Word Blacklist]
+> `/addbl <kata> [<mode>] [<waktu>] [<alasan>]`
+Menambahkan kata kedalam daftar hitam
+contoh :
+> `/addbl anu`
+> `/addbl anu kick`
+> `/addbl anu mute 12h`
+
+> `/rmbl <kata>`
+Menghapus kata dari daftar hitam
+contoh :
+> `/rmbl anu`
+
+> `/blacklist`
+Menampilkan daftar kata yang ada di daftar hitam
+
+[Mode]
+Opsional, mode defaultnya adalah delete
+- delete	- ban
+- kick		- mute
+
+[Waktu]
+Khusus mode mute dan ban (Opsional)
+daftar unit waktu :
+- s = detik
+- m = menit
+- h = jam
+- d = hari
+	""",
+	'blacklist_added': "<code>{}</code> Telah ditambahkan ke GBlacklist dengan mode {}",
+	'blacklist_duration': " dan durasi selama {}",
+	'blacklist_reason': ".\nAlasan: {}",
+	'blacklist_deleted': "<code>{}</code> Berhasil dihapus dari Blacklist!",
+	'cannot_remove_blacklist': "<code>{}</code> Gagal dihapus dari Blacklist!",
+	'what_blacklist_to_remove': "Apa yang mau dihapus dari Blacklist?",
+	'blacklist_list': "Daftar kata yang diblacklist di Grup ini:\n",
+	'no_blacklist': "Tidak ada kata yang diblacklist di Grup ini!",
+	'muted': "Dibisukan",
+	'kicked': "Ditendang",
+	'banned': "Dibanned",
+	'blacklist_for': " selama {}",
+	'user_and_reason': "\nUser : {}\nAlasan :",
+	'blacklist_said': " Mengatakan <code>{}</code>",
 }
