@@ -30,4 +30,17 @@ Perintah **Utama** yang tersedia:
  - /start: mendapatkan pesan start
  - /help: mendapatkan semua bantuan
 	""",
+	'stickers': "Sticker",
+	'stickers_help': """
+[Stickers]
+> `/stickerid`
+Mendapatkan id dari sticker yang dibalas
+
+> `/getsticker`
+Untuk mendapatkan sticker yang dibalas dalam bentuk gambar/video (png/webm)
+	""",
+	'your_stickerid': "Id sticker yang anda balas :\n{}",
+	'must_reply_to_sticker': "Anda harus membalas pesan sticker untuk menggunakan perintah ini!",
+	'animated_not_supported': "Stiker animasi tidak didukung!",
+	'use_whisely': "Gunakan fitur ini dengan bijak!\nSilahkan cek gambar dibawah ini :)",
 }
