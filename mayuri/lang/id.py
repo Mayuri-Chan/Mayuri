@@ -155,4 +155,41 @@ daftar unit waktu :
 	'blpack_list': "Daftar Sticker Pack yang diblacklist di Grup ini:\n",
 	'no_blpack': "Tidak ada Sticker Pack yang diblacklist di Grup ini!",
 	'blpack_send': "Mengirimkan sticker yang ada di pack <code>{}</code>",
+	'blsticker': "Daftar Hitam Sticker",
+	'blsticker_help': """Module ini digunakan untuk melarang penggunaan suatu sticker.
+[Sticker Blacklist]
+> `/addblsticker [<mode>] [<waktu>] [<alasan>]`
+Menambahkan stickerpack kedalam daftar hitam
+contoh :
+> `/addblsticker`
+> `/addblsticker kick`
+> `/addblsticker mute 12h`
+
+> `/rmblsticker`
+Menghapus sticker dari daftar hitam
+contoh :
+> `/rmblsticker`
+
+> `/blsticker`
+Menampilkan daftar sticker yang ada di daftar hitam
+
+[Mode]
+Opsional, mode defaultnya adalah delete
+- delete	- ban
+- kick		- mute
+
+[Waktu]
+Khusus mode mute dan ban (Opsional)
+daftar unit waktu :
+- s = detik
+- m = menit
+- h = jam
+- d = hari
+	""",
+	'blsticker_added': "Sticker <code>{}</code> Telah ditambahkan ke Blacklist dengan {}",
+	'blsticker_deleted': "Sticker <code>{}</code> Berhasil dihapus dari Blacklist!",
+	'cannot_remove_blsticker': "Sticker <code>{}</code> Gagal dihapus dari Blacklist!",
+	'blsticker_list': "Daftar Sticker yang diblacklist di Grup ini:\n",
+	'no_blsticker': "Tidak ada Sticker yang diblacklist di Grup ini!",
+	'blsticker_send': "Mengirimkan sticker <code>{}</code>",
 }
