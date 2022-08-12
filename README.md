@@ -8,4 +8,10 @@ You can found this bot on telegram [here](https://t.me/Mayuri17Bot)
 ## Thanks To
 
 • [Pyrogram](https://github.com/pyrogram)  
+• [Ahmad Thoriq Najahi](https://github.com/najahiiii)  
 • [Ayra Hikari](https://github.com/AyraHikari)  
+• [EsseX](https://github.com/Dank-del/EsseX)  
+• [pokurt](https://github.com/pokurt)  
+• One4uBot  
+• [EduuRobot](https://github.com/AmanoTeam/EduuRobot)  
+• [IzumiUchihaBOT](https://github.com/soulr344/IzumiUchihaBOT)
