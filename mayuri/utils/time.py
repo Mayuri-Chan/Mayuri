@@ -21,6 +21,7 @@ def create_time(time_raw):
 def tl_time(time_raw):
 	unit = time_raw[-1]
 	time_val = time_raw[0:-1]
+	result = ''
 	if unit == "d":
 		result = "{} Hari".format(time_val)
 	elif unit == "h":

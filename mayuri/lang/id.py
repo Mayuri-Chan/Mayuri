@@ -118,4 +118,41 @@ Mendapatkan daftar filter aktif
 	'what_filter_to_remove': "Apa yang mau dihapus dari filter?",
 	'filter_list': "Daftar filters di Grup ini:\n",
 	'no_filter_found': "Tidak ada filters di {}!",
+	'blpack': "Daftar Hitam Stickerpack",
+	'blpack_help': """Module ini digunakan untuk melarang penggunaan semua sticker dalam suatu Stickerpack.
+[Stickerpack Blacklist]
+> `/addblpack [<mode>] [<waktu>] [<alasan>]`
+Menambahkan stickerpack kedalam daftar hitam
+contoh :
+> `/addblpack`
+> `/addblpack kick`
+> `/addblpack mute 12h`
+
+> `/rmblpack`
+Menghapus stickerpack dari daftar hitam
+contoh :
+> `/rmblpack`
+
+> `/blpack`
+Menampilkan daftar stickerpack yang ada di daftar hitam
+
+[Mode]
+Opsional, mode defaultnya adalah delete
+- delete	- ban
+- kick		- mute
+
+[Waktu]
+Khusus mode mute dan ban (Opsional)
+daftar unit waktu :
+- s = detik
+- m = menit
+- h = jam
+- d = hari
+	""",
+	'blpack_added': "Sticker Pack <code>{}</code> Telah ditambahkan ke Blacklist dengan {}",
+	'blpack_deleted': "Sticker Pack <code>{}</code> Berhasil dihapus dari Blacklist!",
+	'cannot_remove_blpack': "Sticker Pack <code>{}</code> Gagal dihapus dari Blacklist!",
+	'blpack_list': "Daftar Sticker Pack yang diblacklist di Grup ini:\n",
+	'no_blpack': "Tidak ada Sticker Pack yang diblacklist di Grup ini!",
+	'blpack_send': "Mengirimkan sticker yang ada di pack <code>{}</code>",
 }
