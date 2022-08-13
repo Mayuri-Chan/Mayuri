@@ -1,7 +1,7 @@
 from mayuri import PREFIX
 from mayuri.db import filters as sql
 from mayuri.mayuri import Mayuri
-from mayuri.utils.filters import admin_only
+from mayuri.utils.filters import admin_only, disable
 from mayuri.utils.lang import tl
 from mayuri.utils.string import split_quotes, parse_button, build_keyboard
 from pyrogram import filters
@@ -87,7 +87,7 @@ async def rm_filter(c,m):
 	else:
 		await m.reply_text(await tl(chat_id, 'what_filter_to_remove'))
 
-@Mayuri.on_message(filters.command("filters", PREFIX))
+@Mayuri.on_message(filters.group & disable("filters"))
 async def filters_list(c,m):
 	chat_id = m.chat.id
 	list_name = sql.filter_list(chat_id)

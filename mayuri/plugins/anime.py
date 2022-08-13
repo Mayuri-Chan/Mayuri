@@ -7,16 +7,15 @@ import requests
 
 from base64 import b64encode
 from io import BytesIO, StringIO
-from mayuri import PREFIX
 from mayuri.mayuri import Mayuri
+from mayuri.utils.filters import disable
 #from mayuri.utils.lang import tl
 from Pymoe import Anilist
-from pyrogram import filters
 from pyrogram.errors import RPCError
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from urllib.parse import quote as urlencode
 
-@Mayuri.on_message(filters.command("sanime", PREFIX))
+@Mayuri.on_message(disable("sanime"))
 async def sanime(c, m):
 	query = m.text.split(None, 1)
 	instance = Anilist()
@@ -181,7 +180,7 @@ query ($id: Int,$search: String) {
 
 url = 'https://graphql.anilist.co'
 
-@Mayuri.on_message(filters.command("airing", PREFIX))
+@Mayuri.on_message(disable("airing"))
 async def airing(c, m):
 	search_str = m.text.split(' ', 1)
 	if len(search_str) == 1:
@@ -199,7 +198,7 @@ async def airing(c, m):
 		ms_g += f"\n**Episode**:{response['episodes']}\n**Status**: `N/A`"
 	await m.reply_text(ms_g)
 
-@Mayuri.on_message(filters.command("anime", PREFIX))
+@Mayuri.on_message(disable("anime"))
 async def anime(c, m):
 	search = m.text.split(' ', 1)
 	if len(search) == 1:
@@ -253,7 +252,7 @@ async def anime(c, m):
 		else:
 			await m.edit(msg)
 
-@Mayuri.on_message(filters.command("character", PREFIX))
+@Mayuri.on_message(disable("character"))
 async def character(c, m):
 	search = m.text.split(' ', 1)
 	if len(search) == 1:
@@ -275,7 +274,7 @@ async def character(c, m):
 		else:
 			await m.reply_text(m, text=ms_g)
 
-@Mayuri.on_message(filters.command("manga", PREFIX))
+@Mayuri.on_message(disable("manga"))
 async def manga(c, m):
 	search = m.text.split(' ', 1)
 	if len(search) == 1:
@@ -317,7 +316,7 @@ async def manga(c, m):
 		else:
 			await m.reply_text(m, text=ms_g)
 
-@Mayuri.on_message(filters.command("whatanime", PREFIX))
+@Mayuri.on_message(disable("whatanime"))
 async def whatanime(c,m):
 	reply = m.reply_to_message
 	if reply:

@@ -7,7 +7,7 @@ from mayuri import PREFIX, USE_OCR
 from mayuri.db import blacklist as sql
 from mayuri.mayuri import Mayuri
 from mayuri.plugins.admin import check_admin
-from mayuri.utils.filters import admin_only
+from mayuri.utils.filters import admin_only, disable
 from mayuri.utils.lang import tl
 from mayuri.utils.string import split_quotes
 from mayuri.utils.time import create_time, tl_time
@@ -77,7 +77,7 @@ async def rm_bl(c,m):
 	else:
 		await m.reply_text(await tl(chat_id, 'what_blacklist_to_remove'))
 
-@Mayuri.on_message(filters.command("blacklist", PREFIX))
+@Mayuri.on_message(filters.group & disable("blacklist"))
 async def blacklist_list(c,m):
 	chat_id = m.chat.id
 	list_trigger = sql.blacklist_list(chat_id)

@@ -192,4 +192,31 @@ daftar unit waktu :
 	'blsticker_list': "Daftar Sticker yang diblacklist di Grup ini:\n",
 	'no_blsticker': "Tidak ada Sticker yang diblacklist di Grup ini!",
 	'blsticker_send': "Mengirimkan sticker <code>{}</code>",
+	'disable': "Disable Commands",
+	'disable_help': """Modul ini digunakan untuk menon-aftikan penggunaan perintah didalam grup
+[Disable Commands]
+> `/disable <perintah>`
+Untuk menonaktifkan perintah
+contoh :
+> `/disable adminlist`
+
+> `/enable <perintah>`
+Untuk mengaktifkan kembali perintah yang telah di non-aktifkan
+contoh :
+> `/enable adminlist`
+
+> `/disabled`
+Untuk menampilkan daftar perintah yang telah di non-aktifkan
+
+> `/disableable`
+Untuk menampilkan daftar perintah yang dapat di non-aktifkan
+	""",
+	'cmd_not_found': "Perintah {} tidak tersedia!",
+	'cmd_disabled': "Perintah {} berhasil dinon-aktifkan!",
+	'what_cmd_to_disable': "Perintah apa yang mau dinon-aktifkan?",
+	'cmd_enabled': "Perintah {} berhasil diaktifkan!",
+	'what_cmd_to_enable': "Perintah apa yang mau diaktifkan?",
+	'disabled_list': "Daftar Perintah yang dinon-aktifkan di grup ini:\n",
+	'no_cmd_disabled': "Tidak ada Perintah yang dinon-aktifkan di grup ini!",
+	'can_disabled': "Daftar Perintah yang dapat dinon-aktifkan:\n",
 }

@@ -36,6 +36,7 @@ def mulaisql() -> scoped_session:
 BASE = declarative_base()
 SESSION = mulaisql()
 HELP_COMMANDS = {}
+DISABLEABLE = []
 
 async def init_help(list_all_plugins):
 	for plugin in list_all_plugins:

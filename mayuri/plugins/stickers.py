@@ -1,10 +1,10 @@
 import cv2
 import os
-from mayuri import LOG_CHAT, PREFIX
+from mayuri import LOG_CHAT
 from mayuri.mayuri import Mayuri
+from mayuri.utils.filters import disable
 from mayuri.utils.lang import tl
 from mayuri.utils.misc import EMOJI_PATTERN, http
-from pyrogram import filters
 from pyrogram.errors import PeerIdInvalid, StickersetInvalid
 from pyrogram.raw.functions.messages import GetStickerSet, SendMedia
 from pyrogram.raw.functions.stickers import AddStickerToSet, CreateStickerSet
@@ -20,7 +20,7 @@ from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 __PLUGIN__ = "stickers"
 __HELP__ = "stickers_help"
 
-@Mayuri.on_message(filters.command("stickerid", PREFIX))
+@Mayuri.on_message(disable("stickerid"))
 async def stickerid(c,m):
 	chat_id = m.chat.id
 	if m.reply_to_message and m.reply_to_message.sticker:
@@ -28,7 +28,7 @@ async def stickerid(c,m):
 	else:
 		await m.reply_text(await tl(chat_id, "must_reply_to_sticker"))
 
-@Mayuri.on_message(filters.command("getsticker", PREFIX))
+@Mayuri.on_message(disable("getsticker"))
 async def getsticker(c,m):
 	chat_id = m.chat.id
 	animated = False
@@ -54,7 +54,7 @@ async def getsticker(c,m):
 	else:
 		await m.reply_text(await tl(chat_id, "must_reply_to_sticker"))
 
-@Mayuri.on_message(filters.command("kang", PREFIX))
+@Mayuri.on_message(disable("kang"))
 async def kang_sticker(c, m):
 	chat_id = m.chat.id
 	prog_msg = await m.reply_text(await tl(chat_id, "processing"))
