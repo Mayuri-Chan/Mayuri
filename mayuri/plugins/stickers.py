@@ -58,7 +58,7 @@ async def getsticker(c,m):
 async def kang_sticker(c, m):
 	chat_id = m.chat.id
 	prog_msg = await m.reply_text(await tl(chat_id, "processing"))
-	bot_username = (await c.get_me()).username
+	bot_username = c.me.username
 	sticker_emoji = "🤔"
 	packnum = 0
 	packname_found = False
@@ -67,6 +67,7 @@ async def kang_sticker(c, m):
 	videos = False
 	reply = m.reply_to_message
 	user = await c.resolve_peer(m.from_user.username or m.from_user.id)
+	filename = ""
 	if reply and reply.media:
 		if reply.photo:
 			resize = True
@@ -92,23 +93,27 @@ async def kang_sticker(c, m):
 			return await prog_msg.edit_text(await tl(chat_id, "cannot_kang"))
 		pack_prefix = "anim" if animated else ("vid" if videos else "c")
 		packname = f"{pack_prefix}{m.from_user.id}_by_{bot_username}"
-
-		if len(m.command) > 1:
-			if m.command[1].isdigit() and int(m.command[1]) > 0:
+		command = m.text.split(None, 1)
+		if len(command) > 1:
+			if command[1].isdigit() and int(command[1]) > 0:
 				# provide pack number to kang in desired pack
-				packnum = m.command.pop(1)
+				packnum = command.pop(1)
 				packname = f"{pack_prefix}{packnum}_{m.from_user.id}_by_{bot_username}"
-			if len(m.command) > 1:
+			if len(command) > 1:
 				# matches all valid emojis in input
 				sticker_emoji = (
-					"".join(set(EMOJI_PATTERN.findall("".join(m.command[1:]))))
+					"".join(set(EMOJI_PATTERN.findall("".join(command[1:]))))
 					or sticker_emoji
 				)
-		filename = await c.download_media(m.reply_to_message)
+		if filename:
+			filename = await c.download_media(m.reply_to_message, "downloads/"+filename)
+		else:
+			filename = await c.download_media(m.reply_to_message)
 		if not filename:
 			# Failed to download
 			await prog_msg.delete()
 			return
+		'''
 	elif m.entities and len(m.entities) > 1:
 		packname = f"c{m.from_user.id}_by_{bot_username}"
 		pack_prefix = "a"
@@ -129,17 +134,18 @@ async def kang_sticker(c, m):
 					f.write(r.read())
 		except Exception as r_e:
 			return await prog_msg.edit_text(f"{r_e.__class__.__name__} : {r_e}")
-		if len(m.command) > 2:
-			# m.command[1] is image_url
-			if m.command[2].isdigit() and int(m.command[2]) > 0:
-				packnum = m.command.pop(2)
+		if len(command) > 2:
+			# command[1] is image_url
+			if command[2].isdigit() and int(command[2]) > 0:
+				packnum = command.pop(2)
 				packname = f"c{packnum}_{m.from_user.id}_by_{bot_username}"
-			if len(m.command) > 2:
+			if len(command) > 2:
 				sticker_emoji = (
-					"".join(set(EMOJI_PATTERN.findall("".join(m.command[2:]))))
+					"".join(set(EMOJI_PATTERN.findall("".join(command[2:]))))
 					or sticker_emoji
 				)
 			resize = True
+		'''
 	else:
 		return await prog_msg.delete()
 
