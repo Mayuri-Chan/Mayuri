@@ -5,6 +5,7 @@ from mayuri.mayuri import Mayuri
 from mayuri.utils.filters import disable
 from mayuri.utils.lang import tl
 from mayuri.utils.misc import EMOJI_PATTERN, http
+from pyrogram import enums
 from pyrogram.errors import PeerIdInvalid, StickersetInvalid
 from pyrogram.raw.functions.messages import GetStickerSet, SendMedia
 from pyrogram.raw.functions.stickers import AddStickerToSet, CreateStickerSet
@@ -113,7 +114,6 @@ async def kang_sticker(c, m):
 			# Failed to download
 			await prog_msg.delete()
 			return
-		'''
 	elif m.entities and len(m.entities) > 1:
 		packname = f"c{m.from_user.id}_by_{bot_username}"
 		pack_prefix = "a"
@@ -121,7 +121,7 @@ async def kang_sticker(c, m):
 		img_url = None
 		filename = "sticker.png"
 		for y in m.entities:
-			if y.type == "url":
+			if y.type == enums.MessageEntityType.URL:
 				img_url = m.text[y.offset : (y.offset + y.length)]
 				break
 		if not img_url:
@@ -134,6 +134,7 @@ async def kang_sticker(c, m):
 					f.write(r.read())
 		except Exception as r_e:
 			return await prog_msg.edit_text(f"{r_e.__class__.__name__} : {r_e}")
+		command = m.text.split(None, 1)
 		if len(command) > 2:
 			# command[1] is image_url
 			if command[2].isdigit() and int(command[2]) > 0:
@@ -145,7 +146,6 @@ async def kang_sticker(c, m):
 					or sticker_emoji
 				)
 			resize = True
-		'''
 	else:
 		return await prog_msg.delete()
 
