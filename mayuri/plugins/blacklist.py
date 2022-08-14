@@ -1,6 +1,7 @@
 import asyncio
 import os
 import re
+import unicodedata
 
 from datetime import datetime
 from mayuri import PREFIX, USE_OCR
@@ -141,9 +142,9 @@ async def blacklist_task(c,m):
 	if m.sticker:
 		text = m.sticker.emoji
 	elif m.caption:
-		text = m.caption.lower()
+		text = unicodedata.normalize('NFKC', m.caption).lower()
 	elif m.text:
-		text = m.text.lower()
+		text = unicodedata.normalize('NFKC', m.text).lower()
 	if m.photo or m.sticker or (m.document and m.document.mime_type in mt):
 		if m.photo:
 			target = "images/bl/{}.jpg".format(m.photo.file_id)
