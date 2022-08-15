@@ -8,3 +8,4 @@ pytesseract
 requests
 sqlalchemy
 tgcrypto
+unidecode

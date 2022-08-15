@@ -1,7 +1,6 @@
 import asyncio
 import os
 import re
-import unicodedata
 
 from datetime import datetime
 from mayuri import PREFIX, USE_OCR
@@ -14,6 +13,7 @@ from mayuri.utils.string import split_quotes
 from mayuri.utils.time import create_time, tl_time
 from pyrogram import filters
 from pyrogram.types import ChatPermissions
+from unidecode import unidecode
 
 __PLUGIN__ = "blacklist"
 __HELP__ = "blacklist_help"
@@ -142,9 +142,9 @@ async def blacklist_task(c,m):
 	if m.sticker:
 		text = m.sticker.emoji
 	elif m.caption:
-		text = unicodedata.normalize('NFKC', m.caption).lower()
+		text = unidecode(m.caption).lower()
 	elif m.text:
-		text = unicodedata.normalize('NFKC', m.text).lower()
+		text = unidecode(m.text).lower()
 	if m.photo or m.sticker or (m.document and m.document.mime_type in mt):
 		if m.photo:
 			target = "images/bl/{}.jpg".format(m.photo.file_id)
