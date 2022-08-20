@@ -159,8 +159,9 @@ async def blacklist_task(c,m):
 			import cv2
 			import pytesseract
 			await m.download(target)
+			target = "mayuri/"+target
 			im = cv2.imread(target)
-			text2 = pytesseract.image_to_string(im, config='--psm 12').lower()
+			text2 = pytesseract.image_to_string(im, config='--oem 3 --psm 12').lower()
 			os.remove(target)
 	if not text and not text2:
 		return
