@@ -1,6 +1,6 @@
 import cv2
 import os
-from mayuri import LOG_CHAT
+from mayuri import LOG_STICKER
 from mayuri.mayuri import Mayuri
 from mayuri.utils.filters import disable
 from mayuri.utils.lang import tl
@@ -173,7 +173,7 @@ async def kang_sticker(c, m):
 		file = await c.save_file(filename)
 		media = await c.invoke(
 			SendMedia(
-				peer=(await c.resolve_peer(LOG_CHAT)),
+				peer=(await c.resolve_peer(LOG_STICKER)),
 				media=InputMediaUploadedDocument(
 					file=file,
 					mime_type=c.guess_mime_type(filename),

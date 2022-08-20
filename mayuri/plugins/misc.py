@@ -1,12 +1,19 @@
+import asyncio
+import os
 import re
 import sys
+import time
 from datetime import datetime
 from mayuri import HELP_COMMANDS, OWNER, PREFIX
+from mayuri.db import global_restrict as grsql
 from mayuri.mayuri import Mayuri
 from mayuri.utils.filters import sudo_only
 from mayuri.utils.lang import tl
 from mayuri.utils.misc import paginate_plugins
+from mayuri.utils.string import split_quotes
+from mayuri.utils.time import time_left
 from pyrogram import enums, filters, __version__
+from pyrogram.errors import FloodWait, RPCError
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from re import IGNORECASE, I, match, sub
 from sre_constants import error as sre_err
@@ -160,3 +167,71 @@ async def sed(c,m):
 			return await m.reply_text("B O I! [Learn Regex](https://regexone.com)")
 		if text:
 			await m.reply_text(text)
+
+@Mayuri.on_message(filters.command("info", PREFIX))
+async def user_info(c,m):
+	chat_id = m.chat.id
+	text = m.text
+	text = text.split(None, 1)
+	msg = await m.reply_text(await tl(chat_id, "geting_info"))
+	if m.reply_to_message:
+		user_id = m.reply_to_message.from_user.id
+	else:
+		if len(text) > 1:
+			extracted = split_quotes(text[1])
+			if re.match(r"([0-9]{1,})", text[1].lower()):
+				user_id = text[1]
+			elif len(extracted) > 1:
+				user_id = extracted[0]
+			else:
+				user_id = text[1]
+		else:
+			return await msg.edit_text(await tl(chat_id, "need_user_id"))
+	try:
+		user = await c.get_users(user_id)
+	except FloodWait as e:
+		await asyncio.sleep(e.value)
+	except RPCError:
+		return await msg.edit_text(await tl(chat_id, "need_user_id"))
+	text = await tl(chat_id, "infouser_info")
+	text += (await tl(chat_id, "infouser_id")).format(user.id)
+	text += (await tl(chat_id, "infouser_firstname")).format(user.first_name)
+	text += (await tl(chat_id, "infouser_lastname")).format(user.last_name)
+	text += (await tl(chat_id, "infouser_name")).format(user.username)
+	text += (await tl(chat_id, "infouser_link")).format(user.id)
+	check_gban = grsql.check_gban(user.id)
+	check_gmute = grsql.check_gmute(user.id)
+	check_gdmute = grsql.check_gdmute(user.id)
+	now = time.time()
+	if check_gban:
+		text += await tl(chat_id, "infouser_in_gban")
+		if check_gban.date:
+			text += (await tl(chat_id, "infouser_date")).format(datetime.fromtimestamp(check_gban.date))
+		if check_gban.reason:
+			text += (await tl(chat_id, "blacklist_reason")).format(check_gban.reason)
+		if check_gban.until != 0:
+			text += (await tl(chat_id, "restrict_time_left")).format(time_left(check_gban.until))
+	if check_gmute:
+		text += await tl(chat_id, "infouser_in_gmute")
+		if check_gmute.date:
+			text += (await tl(chat_id, "infouser_date")).format(check_gmute.date)
+		if check_gmute.reason:
+			text += (await tl(chat_id, "blacklist_reason")).format(check_gmute.reason)
+		if check_gmute.until != 0:
+			text += (await tl(chat_id, "restrict_time_left")).format(time_left(check_gmute.until))
+	if check_gdmute:
+		text += await tl(chat_id, "infouser_in_gdmute")
+		if check_gdmute.date:
+			text += (await tl(chat_id, "infouser_date")).format(check_gdmute.date)
+		if check_gdmute.reason:
+			text += (await tl(chat_id, "blacklist_reason")).format(check_gdmute.reason)
+		if check_gdmute.until != 0:
+			text += (await tl(chat_id, "restrict_time_left")).format(time_left(check_gdmute.until))
+	if user.photo:
+		target = "images/users/"+user.photo.big_file_id+".png"
+		await c.download_media(user.photo.big_file_id, file_name=target)
+		await msg.delete()
+		target = "mayuri/"+target
+		await m.reply_photo(photo=open(target, 'rb'), caption=text)
+		return os.remove(target)
+	await msg.edit_text(text)

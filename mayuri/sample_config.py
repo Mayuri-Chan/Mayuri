@@ -6,5 +6,6 @@ class Config(object):
 	DATABASE_URL = "postgresql://postgres:password@localhost:5172/db" # Your database URI
 	WORKERS = 6
 	CUSTOM_PREFIXS = ['/', '$']
-	LOG_CHAT = -1001233232 # required for kang sticker
+	LOG_CHAT = -1001233232 # required for global restrictions
+	LOG_STICKER = -1001233232 # required for kang sticker
 	USE_OCR = False # you need to install tesseract on your server to enable ocr
