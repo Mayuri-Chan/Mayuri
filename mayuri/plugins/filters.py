@@ -117,16 +117,21 @@ async def filter_watcher(c,m):
 	fullname = "{} {}".format(first_name,last_name)
 	user_id = m.from_user.id
 	user_name = m.from_user.username
+	value = ""
 	if not check:
 		return
 	for filt in check:
 		if filt.name in text:
 			value = filt.value
-			text, button = parse_button(value)
-			button = build_keyboard(button)
-			if button:
-				button = InlineKeyboardMarkup(button)
+			if value:
+				text, button = parse_button(value)
+				button = build_keyboard(button)
+				if button:
+					button = InlineKeyboardMarkup(button)
+				else:
+					button = None
 			else:
+				text = ""
 				button = None
 
 			if filt.filter_type == 1:
@@ -148,6 +153,6 @@ async def filter_watcher(c,m):
 					await m.reply_document(document=filt.document,caption=text,reply_markup=button)
 				elif filt.document_type == 3:
 					await m.reply_photo(photo=filt.document,caption=text,reply_markup=button)
-				elif filt.document_type == 3:
+				elif filt.document_type == 4:
 					await m.reply_video(video=filt.document,caption=text,reply_markup=button)
 			break
