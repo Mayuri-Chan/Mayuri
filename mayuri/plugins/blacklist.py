@@ -159,9 +159,14 @@ async def blacklist_task(c,m):
 			import cv2
 			import pytesseract
 			await m.download(target)
-			target = "mayuri/"+target
+			if not os.path.exists(target):
+				target = "mayuri/"+target
 			im = cv2.imread(target)
-			text2 = pytesseract.image_to_string(im, config='--oem 3 --psm 12').lower()
+			im = cv2.cvtColor(im, cv2.COLOR_BGR2RGB)
+			try:
+				text2 = pytesseract.image_to_string(im, config='--oem 3 --psm 12').lower()
+			except RuntimeError:
+				text2 = ""
 			os.remove(target)
 	if not text and not text2:
 		return
