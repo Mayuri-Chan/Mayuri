@@ -9,7 +9,7 @@ from mayuri.db import global_restrict as grsql
 from mayuri.mayuri import Mayuri
 from mayuri.utils.filters import sudo_only
 from mayuri.utils.lang import tl
-from mayuri.utils.misc import paginate_plugins
+from mayuri.utils.misc import check_channel, paginate_plugins
 from mayuri.utils.string import split_quotes
 from mayuri.utils.time import time_left
 from pyrogram import enums, filters, __version__
@@ -19,6 +19,11 @@ from re import IGNORECASE, I, match, sub
 from sre_constants import error as sre_err
 
 DELIMITERS = ("/", ":", "|", "_")
+
+@Mayuri.on_message(filters.group, group=69)
+async def channel_deleter(c,m):
+	if await check_channel(c,m):
+		await m.delete()
 
 @Mayuri.on_message(filters.command("alive", PREFIX) | filters.command("on", PREFIX) & sudo_only)
 async def alive(c, m):

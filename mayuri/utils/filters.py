@@ -1,14 +1,21 @@
+import asyncio
+
 from mayuri import DISABLEABLE, OWNER, PREFIX
 from mayuri.db import admin as admin_db, disable as disable_db, sudo as sudo_db
 from pyrogram import enums, filters
+from pyrogram.errors import FloodWait
 
 async def owner_check(_, __, m):
+	if m.sender_chat:
+		return False
 	user_id = m.from_user.id
 	if user_id == OWNER:
 		return True
 	return False
 
 async def sudo_check(_, __, m):
+	if m.sender_chat:
+		return False
 	user_id = m.from_user.id
 	check = sudo_db.check_sudo(user_id)
 	owner = await owner_check(_, __, m)
@@ -16,7 +23,21 @@ async def sudo_check(_, __, m):
 		return True
 	return False
 
-async def admin_check(_, __, m):
+async def admin_check(_, c, m):
+	if m.sender_chat:
+		try:
+			curr_chat = await c.get_chat(m.chat.id)
+		except FloodWait as e:
+			asyncio.sleep(e.value)
+		if m.sender_chat.id == m.chat.id: # Anonymous admin
+			return True
+		if curr_chat.linked_chat:
+			if (
+				m.sender_chat.id == curr_chat.linked_chat.id and
+				not m.forward_from
+			): # Linked channel owner
+				return True
+		return False
 	chat_id = m.chat.id
 	user_id = m.from_user.id
 	if admin_db.check_admin(chat_id,user_id):

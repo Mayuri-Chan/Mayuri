@@ -288,6 +288,8 @@ async def blacklist_task(c,m):
 
 @Mayuri.on_message(filters.group, group=102)
 async def bl(c,m):
+	if m.sender_chat:
+		return
 	chat_id = m.chat.id
 	user_id = m.from_user.id
 	if await check_admin(chat_id,user_id):

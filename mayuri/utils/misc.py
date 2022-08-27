@@ -1,7 +1,9 @@
+import asyncio
 import httpx
 import re
 from mayuri.utils.lang import tl
-from pyrogram import emoji
+from pyrogram import emoji, enums
+from pyrogram.errors import FloodWait
 from pyrogram.types import InlineKeyboardButton
 
 _EMOJI_REGEXP = None
@@ -60,3 +62,22 @@ def get_emoji_regex():
 EMOJI_PATTERN = get_emoji_regex()
 timeout = httpx.Timeout(40, pool=None)
 http = httpx.AsyncClient(http2=True, timeout=timeout)
+
+async def check_channel(c, m):
+    if m.chat.type == enums.ChatType.PRIVATE:
+        return False
+    if m.sender_chat:
+        try:
+            curr_chat = await c.get_chat(m.chat.id)
+        except FloodWait as e:
+            asyncio.sleep(e.value)
+        if m.sender_chat.id == m.chat.id: # Anonymous admin
+            return False
+        if curr_chat.linked_chat:
+            if (
+                m.sender_chat.id == curr_chat.linked_chat.id and
+                not m.forward_from
+            ): # Linked channel owner
+                return False
+        return True
+    return False

@@ -155,6 +155,8 @@ async def blsticker_list(c,m):
 
 @Mayuri.on_message(filters.group & filters.sticker, group=104)
 async def blsticker_watcher(c,m):
+	if m.sender_chat:
+		return
 	chat_id = m.chat.id
 	user_id = m.from_user.id
 	if await check_admin(chat_id,user_id):

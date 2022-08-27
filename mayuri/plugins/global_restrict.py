@@ -399,6 +399,8 @@ async def ungdmute(c,m):
 
 @Mayuri.on_message(filters.group, group=105)
 async def gban_watcher(c,m):
+	if m.sender_chat:
+		return
 	chat_id = m.chat.id
 	user_id = m.from_user.id
 	mention = m.from_user.mention
@@ -427,6 +429,8 @@ async def gban_watcher(c,m):
 
 @Mayuri.on_message(filters.group, group=106)
 async def gmute_watcher(c,m):
+	if m.sender_chat:
+		return
 	chat_id = m.chat.id
 	user_id = m.from_user.id
 	mention = m.from_user.mention
@@ -455,6 +459,8 @@ async def gmute_watcher(c,m):
 
 @Mayuri.on_message(filters.group, group=107)
 async def gdmute_watcher(c,m):
+	if m.sender_chat:
+		return
 	user_id = m.from_user.id
 	now = time.time()
 	check = sql.check_gdmute(user_id)

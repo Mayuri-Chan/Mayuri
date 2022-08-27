@@ -3,6 +3,7 @@ from mayuri.db import filters as sql
 from mayuri.mayuri import Mayuri
 from mayuri.utils.filters import admin_only, disable
 from mayuri.utils.lang import tl
+from mayuri.utils.misc import check_channel
 from mayuri.utils.string import split_quotes, parse_button, build_keyboard
 from pyrogram import filters
 from pyrogram.types import InlineKeyboardMarkup
@@ -101,6 +102,8 @@ async def filters_list(c,m):
 
 @Mayuri.on_message(filters.group, group=103)
 async def filter_watcher(c,m):
+	if await check_channel(c,m):
+		return
 	chat_id = m.chat.id
 	if m.caption:
 		text = m.caption
