@@ -32,11 +32,11 @@ async def gban_task(c,m):
 		user = m.reply_to_message.from_user
 		if len(text) > 1:
 			extracted = split_quotes(text[1])
-			if re.match(r"([0-9]{1,})([dhms])", text[1].lower()):
+			if re.match(r"([0-9]{1,})([dhms])$", text[1].lower()):
 				duration = text[1].lower()
 				if len(text) > 2:
 					reason = text[2]
-			elif re.match(r"([0-9]{1,})([dhms])", extracted[0].lower()):
+			elif re.match(r"([0-9]{1,})([dhms])$", extracted[0].lower()):
 				duration = extracted[0].lower()
 				if len(extracted) > 1:
 					reason = extracted[1]
@@ -45,19 +45,16 @@ async def gban_task(c,m):
 	else:
 		if len(text) > 1:
 			extracted = split_quotes(text[1])
-			if re.match(r"([0-9]{1,})", text[1].lower()):
-				user_id = text[1]
-			elif len(extracted) > 1:
-				if re.match(r"([0-9]{1,})([dhms])", extracted[1].lower()):
-					duration = extracted[1].lower()
-				extracted1 = split_quotes(extracted[1])
-				if re.match(r"([0-9]{1,})([dhms])", extracted1[0].lower()):
-					duration = extracted1[0].lower()
-					if len(extracted1) > 1:
-						reason = extracted1[1]
-				else:
-					reason = extracted[1]
+			if len(extracted) > 1:
 				user_id = extracted[0]
+				extracted1 = split_quotes(extracted[1])
+				if re.match(r"([0-9]{1,})([dhms])$", extracted[1].lower()):
+					duration = extracted[1].lower()
+				elif len(extracted1) > 1 and re.match(r"([0-9]{1,})([dhms])$", extracted1[0].lower()):
+					duration = extracted1[0].lower()
+					reason = extracted1[1].lower()
+				else:
+					reason = extracted[1].lower()
 			else:
 				user_id = text[1]
 		else:
@@ -97,9 +94,9 @@ async def gban_task(c,m):
 		log += (await tl(chat_id, "infouser_duration")).format(tl_time(duration))
 		text += (await tl(chat_id, "blacklist_for")).format(tl_time(duration))
 	if reason:
-		log += (await tl(chat_id, "blacklist_reason"))
-		text += (await tl(chat_id, "blacklist_reason"))
-	await c.send_text(chat_id=LOG_CHAT, text=log)
+		log += (await tl(chat_id, "blacklist_reason")).format(reason)
+		text += (await tl(chat_id, "blacklist_reason")).format(reason)
+	await c.send_message(chat_id=LOG_CHAT, text=log)
 	await msg.edit_text(text)
 
 @Mayuri.on_message(filters.command("gban", PREFIX) & sudo_only)
@@ -119,11 +116,11 @@ async def gmute_task(c,m):
 		user = m.reply_to_message.from_user
 		if len(text) > 1:
 			extracted = split_quotes(text[1])
-			if re.match(r"([0-9]{1,})([dhms])", text[1].lower()):
+			if re.match(r"([0-9]{1,})([dhms])$", text[1].lower()):
 				duration = text[1].lower()
 				if len(text) > 2:
 					reason = text[2]
-			elif re.match(r"([0-9]{1,})([dhms])", extracted[0].lower()):
+			elif re.match(r"([0-9]{1,})([dhms])$", extracted[0].lower()):
 				duration = extracted[0].lower()
 				if len(extracted) > 1:
 					reason = extracted[1]
@@ -132,19 +129,16 @@ async def gmute_task(c,m):
 	else:
 		if len(text) > 1:
 			extracted = split_quotes(text[1])
-			if re.match(r"([0-9]{1,})", text[1].lower()):
-				user_id = text[1]
-			elif len(extracted) > 1:
-				if re.match(r"([0-9]{1,})([dhms])", extracted[1].lower()):
-					duration = extracted[1].lower()
-				extracted1 = split_quotes(extracted[1])
-				if re.match(r"([0-9]{1,})([dhms])", extracted1[0].lower()):
-					duration = extracted1[0].lower()
-					if len(extracted1) > 1:
-						reason = extracted1[1]
-				else:
-					reason = extracted[1]
+			if len(extracted) > 1:
 				user_id = extracted[0]
+				extracted1 = split_quotes(extracted[1])
+				if re.match(r"([0-9]{1,})([dhms])$", extracted[1].lower()):
+					duration = extracted[1].lower()
+				elif len(extracted1) > 1 and re.match(r"([0-9]{1,})([dhms])$", extracted1[0].lower()):
+					duration = extracted1[0].lower()
+					reason = extracted1[1].lower()
+				else:
+					reason = extracted[1].lower()
 			else:
 				user_id = text[1]
 		else:
@@ -184,9 +178,9 @@ async def gmute_task(c,m):
 		log += (await tl(chat_id, "infouser_duration")).format(tl_time(duration))
 		text += (await tl(chat_id, "blacklist_for")).format(tl_time(duration))
 	if reason:
-		log += (await tl(chat_id, "blacklist_reason"))
-		text += (await tl(chat_id, "blacklist_reason"))
-	await c.send_text(chat_id=LOG_CHAT, text=log)
+		log += (await tl(chat_id, "blacklist_reason")).format(reason)
+		text += (await tl(chat_id, "blacklist_reason")).format(reason)
+	await c.send_message(chat_id=LOG_CHAT, text=log)
 	await msg.edit_text(text)
 
 @Mayuri.on_message(filters.command("gmute", PREFIX) & sudo_only)
@@ -208,11 +202,11 @@ async def gdmute(c,m):
 		user = m.reply_to_message.from_user
 		if len(text) > 1:
 			extracted = split_quotes(text[1])
-			if re.match(r"([0-9]{1,})([dhms])", text[1].lower()):
+			if re.match(r"([0-9]{1,})([dhms])$", text[1].lower()):
 				duration = text[1].lower()
 				if len(text) > 2:
 					reason = text[2]
-			elif re.match(r"([0-9]{1,})([dhms])", extracted[0].lower()):
+			elif re.match(r"([0-9]{1,})([dhms])$", extracted[0].lower()):
 				duration = extracted[0].lower()
 				if len(extracted) > 1:
 					reason = extracted[1]
@@ -221,19 +215,16 @@ async def gdmute(c,m):
 	else:
 		if len(text) > 1:
 			extracted = split_quotes(text[1])
-			if re.match(r"([0-9]{1,})", text[1].lower()):
-				user_id = text[1]
-			elif len(extracted) > 1:
-				if re.match(r"([0-9]{1,})([dhms])", extracted[1].lower()):
-					duration = extracted[1].lower()
-				extracted1 = split_quotes(extracted[1])
-				if re.match(r"([0-9]{1,})([dhms])", extracted1[0].lower()):
-					duration = extracted1[0].lower()
-					if len(extracted1) > 1:
-						reason = extracted1[1]
-				else:
-					reason = extracted[1]
+			if len(extracted) > 1:
 				user_id = extracted[0]
+				extracted1 = split_quotes(extracted[1])
+				if re.match(r"([0-9]{1,})([dhms])$", extracted[1].lower()):
+					duration = extracted[1].lower()
+				elif len(extracted1) > 1 and re.match(r"([0-9]{1,})([dhms])$", extracted1[0].lower()):
+					duration = extracted1[0].lower()
+					reason = extracted1[1].lower()
+				else:
+					reason = extracted[1].lower()
 			else:
 				user_id = text[1]
 		else:
@@ -263,9 +254,9 @@ async def gdmute(c,m):
 		log += (await tl(chat_id, "infouser_duration")).format(tl_time(duration))
 		text += (await tl(chat_id, "blacklist_for")).format(tl_time(duration))
 	if reason:
-		log += (await tl(chat_id, "blacklist_reason"))
-		text += (await tl(chat_id, "blacklist_reason"))
-	await c.send_text(chat_id=LOG_CHAT, text=log)
+		log += (await tl(chat_id, "blacklist_reason")).format(reason)
+		text += (await tl(chat_id, "blacklist_reason")).format(reason)
+	await c.send_message(chat_id=LOG_CHAT, text=log)
 	await msg.edit_text(text)
 
 async def ungban_task(c,m):
@@ -309,7 +300,7 @@ async def ungban_task(c,m):
 	log += (await tl(chat_id, "infouser_lastname")).format(user.last_name)
 	log += (await tl(chat_id, "infouser_name")).format(user.username)
 	log += (await tl(chat_id, "infouser_link")).format(user.id)
-	await c.send_text(chat_id=LOG_CHAT, text=log)
+	await c.send_message(chat_id=LOG_CHAT, text=log)
 	await msg.edit_text(text)
 
 @Mayuri.on_message(filters.command("ungban", PREFIX) & sudo_only)
@@ -350,7 +341,7 @@ async def ungmute_task(c,m):
 			await c.restrict_chat_member(chat.chat_id,user.id, curr)
 		except RPCError:
 			print(RPCError)
-	text = (await tl(chat_id, "ungmute")).format(user.mention)
+	text = (await tl(chat_id, "ungmuted")).format(user.mention)
 	log = await tl(chat_id, "new_ungmute")
 	log += (await tl(chat_id, "infouser_sudo")).format(sudo_mention)
 	log += (await tl(chat_id, "infouser_id")).format(user.id)
@@ -358,7 +349,7 @@ async def ungmute_task(c,m):
 	log += (await tl(chat_id, "infouser_lastname")).format(user.last_name)
 	log += (await tl(chat_id, "infouser_name")).format(user.username)
 	log += (await tl(chat_id, "infouser_link")).format(user.id)
-	await c.send_text(chat_id=LOG_CHAT, text=log)
+	await c.send_message(chat_id=LOG_CHAT, text=log)
 	await msg.edit_text(text)
 
 @Mayuri.on_message(filters.command("ungmute", PREFIX) & sudo_only)
@@ -394,8 +385,8 @@ async def ungdmute(c,m):
 			return await msg.edit_text(await tl(chat_id, "need_user_id"))
 	if await check_sudo(user.id) and sudo_id != int(OWNER):
 		return await msg.edit_text(await tl(chat_id, "why_ungdmute_sudo"))
-	sql.rm_from_gdmute(user_id)
-	text = (await tl(chat_id, "ungdmute")).format(user.mention)
+	sql.rm_from_gdmute(user.id)
+	text = (await tl(chat_id, "ungdmuted")).format(user.mention)
 	log = await tl(chat_id, "new_ungdmute")
 	log += (await tl(chat_id, "infouser_sudo")).format(sudo_mention)
 	log += (await tl(chat_id, "infouser_id")).format(user.id)
@@ -403,7 +394,7 @@ async def ungdmute(c,m):
 	log += (await tl(chat_id, "infouser_lastname")).format(user.last_name)
 	log += (await tl(chat_id, "infouser_name")).format(user.username)
 	log += (await tl(chat_id, "infouser_link")).format(user.id)
-	await c.send_text(chat_id=LOG_CHAT, text=log)
+	await c.send_message(chat_id=LOG_CHAT, text=log)
 	await msg.edit_text(text)
 
 @Mayuri.on_message(filters.group, group=105)

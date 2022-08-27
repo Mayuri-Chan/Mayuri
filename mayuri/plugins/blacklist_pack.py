@@ -30,13 +30,13 @@ async def addblpack(c,m):
 			extracted = split_quotes(text[1])
 			mode_raw = extracted[0]
 			if len(extracted) > 1:
-				if re.match(r"([0-9]{1,})([dhms])", text[1].lower()):
+				if re.match(r"([0-9]{1,})([dhms])$", text[1].lower()):
 					duration = text[1]
 					if len(extracted) > 2:
 						reason = extracted[2]
 				else:
 					extracted1 = split_quotes(extracted[1])
-					if re.match(r"([0-9]{1,})([dhms])", extracted1[0].lower()):
+					if re.match(r"([0-9]{1,})([dhms])$", extracted1[0].lower()):
 						duration = extracted1[0]
 						if len(extracted1) > 1:
 							reason = extracted1[1]
@@ -47,7 +47,7 @@ async def addblpack(c,m):
 	else:
 		text = m.text
 		text = text.split(None, 1)
-		packname = text[1].lower()
+		packname = text[1]
 		extracted = split_quotes(packname)
 		duration = ""
 		reason = ""
@@ -59,7 +59,7 @@ async def addblpack(c,m):
 				extracted1 = split_quotes(extracted[1])
 				if len(extracted1) > 1:
 					extracted2 = split_quotes(extracted1[1])
-					if re.match(r"([0-9]{1,})([dhms])", extracted2[0].lower()):
+					if re.match(r"([0-9]{1,})([dhms])$", extracted2[0].lower()):
 						duration = extracted2[0].lower()
 						if len(extracted2) > 1:
 							reason = extracted2[1].lower()

@@ -253,4 +253,6 @@ Untuk menampilkan daftar perintah yang dapat di non-aktifkan
 	'infouser_in_gmute': "\n\nUser ada didaftar gmute.",
 	'infouser_in_gdmute': "\n\nUser ada didaftar gdmute.",
 	'infouser_date': "\nTanggal: {}",
+	'infouser_sudo': "\nSudo: {}",
+	'infouser_duration': "\nDurasi: {}",
 }

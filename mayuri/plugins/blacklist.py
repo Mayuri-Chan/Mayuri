@@ -36,7 +36,7 @@ async def addbl(c,m):
 			extracted1 = split_quotes(extracted[1])
 			if len(extracted1) > 1:
 				extracted2 = split_quotes(extracted1[1])
-				if re.match(r"([0-9]{1,})([dhms])", extracted2[0].lower()):
+				if re.match(r"([0-9]{1,})([dhms])$", extracted2[0].lower()):
 					duration = extracted2[0].lower()
 					if len(extracted2) > 1:
 						reason = extracted2[1].lower()
@@ -172,8 +172,6 @@ async def blacklist_task(c,m):
 		return
 	data_list = []
 	mode_list = []
-	duration_list = {}
-	reason_list = {}
 	check = sql.blacklist_list(chat_id)
 	if not check:
 		return
@@ -182,41 +180,73 @@ async def blacklist_task(c,m):
 		ch = re.search(trigger.trigger.replace('"',''),text)
 		ch2 = re.search(trigger.trigger.replace('"',''),text2)
 		if ch or ch2:
+			data = {
+				'trigger': trigger.trigger,
+				'mode': trigger.mode,
+				'reason': trigger.reason,
+				'duration': trigger.duration
+			}
 			if trigger.mode == 0:
-				data_list.append({'trigger': trigger.trigger,'mode': trigger.mode})
+				data_list.append(data)
 				if trigger.mode not in mode_list:
 					mode_list.append(trigger.mode)
 			elif trigger.mode == 1:
-				data_list.append({'trigger': trigger.trigger,'mode': trigger.mode})
+				data_list.append(data)
 				if trigger.mode not in mode_list:
 					mode_list.append(trigger.mode)
 			elif trigger.mode == 2:
-				data_list.append({'trigger': trigger.trigger,'mode': trigger.mode})
+				data_list.append(data)
 				if trigger.mode not in mode_list:
 					mode_list.append(trigger.mode)
 			elif trigger.mode == 3:
-				data_list.append({'trigger': trigger.trigger,'mode': trigger.mode})
+				data_list.append(data)
 				if trigger.mode not in mode_list:
 					mode_list.append(trigger.mode)
-			reason_list[trigger.trigger] = trigger.reason
-			duration_list[trigger.trigger] = trigger.duration
 
 	mode_list.sort()
-	if len(mode_list) > 1:
+	curr_duration = 0
+	curr_unit = ""
+	if len(mode_list) > 0:
 		mode = mode_list[len(mode_list)-1]
 		for data in data_list:
 			if data["mode"] == mode:
-				trigger = data["trigger"]
-				break
-	elif len(mode_list) == 1:
-		mode = mode_list[0]
-		trigger = data_list[0]["trigger"]
+				curr_duration_raw = data["duration"]
+				if not curr_duration_raw:
+					duration_raw = data["duration"]
+					trigger = data["trigger"]
+					reason = data["reason"]
+					break
+				else:
+					duration_unit = curr_duration_raw[len(curr_duration_raw)-1]
+					duration_time = int(curr_duration_raw[0:len(curr_duration_raw)-1])
+					if not curr_duration:
+						curr_duration = duration_time
+						curr_unit = duration_unit
+						duration_raw = curr_duration_raw
+						trigger = data["trigger"]
+						reason = data["reason"]
+					elif curr_unit ==  duration_unit:
+						if curr_duration < duration_time:
+							curr_duration = duration_time
+							duration_raw = curr_duration_raw
+							trigger = data["trigger"]
+							reason = data["reason"]
+					elif (
+						duration_unit == 'm' and curr_unit == 's' or
+						duration_unit == 'h' and curr_unit in ['s','m'] or
+						duration_unit == 'd' and curr_unit in ['s', 'm', 'h']
+					):
+						curr_duration = duration_time
+						curr_unit = duration_unit
+						duration_raw = curr_duration_raw
+						trigger = data["trigger"]
+						reason = data["reason"]
 	else:
 		return
-	reason = reason_list[trigger]
-	duration_raw = duration_list[trigger]
 	if duration_raw:
 		duration = create_time(duration_raw)
+	if mode == 0:
+		await m.delete()
 	if mode == 1:
 		await m.delete()
 		text = await tl(chat_id, 'muted')
