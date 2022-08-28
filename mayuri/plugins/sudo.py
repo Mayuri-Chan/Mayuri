@@ -51,7 +51,7 @@ async def sudols(c,m):
 	text = await tl(chat_id, "sudo_ls")
 	sudo_list = sql.sudo_list()
 	for sudo in sudo_list:
-		user = await c.get_users(sudo)
+		user = await c.get_users(sudo.user_id)
 		mention = user.mention
 		text += "\n - {}".format(mention)
 	await m.reply_text(text)
