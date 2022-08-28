@@ -149,6 +149,8 @@ async def blacklist_task(c,m):
 		if m.photo:
 			target = "images/bl/{}.jpg".format(m.photo.file_id)
 		elif m.sticker:
+			if m.sticker.is_animated or m.sticker.is_video:
+				return
 			target = "images/bl/{}.webp".format(m.sticker.file_id)
 		elif m.document:
 			if m.document.mime_type == "image/jpeg":
