@@ -1,5 +1,6 @@
 import asyncio
 import re
+import requests
 import time
 
 from datetime import datetime
@@ -18,6 +19,33 @@ from pyrogram.types import ChatPermissions
 
 #__PLUGIN__ = "blacklist"
 #__HELP__ = "blacklist_help"
+
+@Mayuri.on_message(filters.group, group=70)
+async def cas_watcher(c,m):
+	if m.sender_chat:
+		return
+	chat_id = m.chat.id
+	chat_name = m.chat.username
+	user_id = m.from_user.id
+	mention = m.from_user.mention
+	r = requests.get("https://api.cas.chat/check?user_id={}".format(user_id)).json()
+	if not r["ok"]:
+		return
+	reason = "[CAS #{}](https://cas.chat/query?u={})".format(user_id,user_id)
+	msg = await m.reply("Gbanning...")
+	await c.ban_chat_member(chat_id,user_id)
+	sql.add_to_gban(user_id,reason,0)
+	for chat in sql.chat_list():
+		if chat.chat_id != m.chat.id:
+			try:
+				if not await check_admin(chat.chat_id,user_id):
+					await c.ban_chat_member(chat.chat_id,user_id)
+			except RPCError as e:
+				print("{} | {}".format(e,chat.chat_name))
+	log = (await tl(chat_id, "cas_log")).format(chat_name,mention,user_id,reason)
+	text = (await tl(chat_id, "cas_msg")).format(mention,reason)
+	await msg.edit(text, disable_web_page_preview=True)
+	await c.send_message(chat_id=LOG_CHAT, text=log)
 
 async def gban_task(c,m):
 	chat_id = m.chat.id

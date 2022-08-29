@@ -255,4 +255,6 @@ Untuk menampilkan daftar perintah yang dapat di non-aktifkan
 	'infouser_date': "\nTanggal: {}",
 	'infouser_sudo': "\nSudo: {}",
 	'infouser_duration': "\nDurasi: {}",
+	'cas_log': "#CAS_GBAN\nCAS Global Ban Baru.\nChat: @{}\nPengguna: {}\nID Pengguna: `{}`\nAlasan: {}",
+	'cas_msg': "User {} telah di ban secara global\nAlasan: {}\n\nPowered by: Combot Anti Spam API",
 }
