@@ -58,10 +58,12 @@ async def add_admin_to_list(chat_id,user_id,user_name):
 	with ADMINSET_INSERTION_LOCK:
 		prev = SESSION.query(AdminList).get((str(chat_id), user_id))
 		if prev:
-			SESSION.commit()
+			SESSION.close()
 			return
 		admin_list = AdminList(chat_id,user_id,user_name)
 		SESSION.merge(admin_list)
+		SESSION.commit()
+		SESSION.close()
 
 def remove_admin_list(chat_id):
 	with ADMINSET_INSERTION_LOCK:
