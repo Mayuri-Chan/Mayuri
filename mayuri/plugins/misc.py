@@ -191,7 +191,7 @@ async def user_info(c,m):
 			else:
 				user_id = text[1]
 		else:
-			return await msg.edit_text(await tl(chat_id, "need_user_id"))
+			user_id = m.from_user.id
 	try:
 		user = await c.get_users(user_id)
 	except FloodWait as e:
