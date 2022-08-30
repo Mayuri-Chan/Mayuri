@@ -180,6 +180,8 @@ async def user_info(c,m):
 	text = text.split(None, 1)
 	msg = await m.reply_text(await tl(chat_id, "geting_info"))
 	if m.reply_to_message:
+		if m.reply_to_message.sender_chat:
+			return msg.edit_text(await tl(chat_id, "infouser_is_channel"))
 		user_id = m.reply_to_message.from_user.id
 	else:
 		if len(text) > 1:
@@ -191,6 +193,8 @@ async def user_info(c,m):
 			else:
 				user_id = text[1]
 		else:
+			if m.sender_chat:
+				return await msg.edit_text(await tl(chat_id, "need_user_id"))
 			user_id = m.from_user.id
 	try:
 		user = await c.get_users(user_id)
