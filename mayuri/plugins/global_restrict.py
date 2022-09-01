@@ -438,6 +438,9 @@ async def gban_watcher(c,m):
 	check = sql.check_gban(user_id)
 	if not check:
 		return
+	exp = r"CAS #{}$".format(user_id)
+	if check.reason and re.match(exp, check.reason):
+		return
 	until = check.until
 	if until != 0:
 		if until > now:
