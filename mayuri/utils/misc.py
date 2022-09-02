@@ -1,6 +1,7 @@
 import asyncio
 import httpx
 import re
+from mayuri.db import approve as asql
 from mayuri.utils.lang import tl
 from pyrogram import emoji, enums
 from pyrogram.errors import FloodWait
@@ -81,3 +82,6 @@ async def check_channel(c, m):
                 return False
         return True
     return False
+
+async def check_approve(chat_id, user_id):
+    return asql.check_approve(chat_id,user_id)

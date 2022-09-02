@@ -9,6 +9,7 @@ from mayuri.mayuri import Mayuri
 from mayuri.plugins.admin import check_admin
 from mayuri.utils.filters import admin_only, disable
 from mayuri.utils.lang import tl
+from mayuri.utils.misc import check_approve
 from mayuri.utils.string import split_quotes
 from mayuri.utils.time import create_time, tl_time
 from pyrogram import filters
@@ -294,6 +295,6 @@ async def bl(c,m):
 		return
 	chat_id = m.chat.id
 	user_id = m.from_user.id
-	if await check_admin(chat_id,user_id):
+	if await check_admin(chat_id,user_id) or await check_approve(chat_id, user_id):
 		return
 	asyncio.create_task(blacklist_task(c,m))

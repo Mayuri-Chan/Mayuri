@@ -12,18 +12,24 @@ text = {
 	'no_zombies': "Grup bersih. tidak ada akun terhapus :)",
 	'found_zombies': "Ditemukan {} akun terhapus.\nMembersihan...",
 	'zombies_cleaned': "Berhasil membersihkan {} akun terhapus",
-	'admin': "Admin",
+	'admin': "Admin Tools",
 	'admin_help': """
-Module ini digunakan untuk menampilkan list admin di dalam grup.
-[Admin List]
-> `/adminlist`
-Melihat daftar admin.
+Module ini digunakan untuk mengatur grup.
+[Admin Tools]
 > `/admincache`
 Memperbaharui daftar admin.
+> `/approve`
+Menambahkan user ke whitelist.
+> `/unapprove`
+Menghapus user dari whitelist.
 > `/zombies`
 Mencari dan membersihkan akun terhapus.
 	""",
 	'admin_refreshed': "Cache admin berhasil direfresh.",
+	'admin_approved_list': "Daftar user yang diwhitelist di grup ini:",
+	'admin_no_approved': "Belum ada user yang diwhitelist di grup ini!",
+	'admin_user_added_to_approve': "User {} telah ditambahkan ke daftar whitelist",
+	'admin_user_removed_to_approve': "User {} telah dihapus dari daftar whitelist",
 	'HELP_STRINGS': """
 Kamu dapat menggunakan {} untuk mengeksekusi perintah bot ini.
 Perintah **Utama** yang tersedia:

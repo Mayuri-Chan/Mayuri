@@ -11,6 +11,7 @@ from mayuri.plugins.admin import check_admin
 from mayuri.plugins.sudo import check_sudo
 from mayuri.utils.filters import sudo_only
 from mayuri.utils.lang import tl
+from mayuri.utils.misc import check_approve
 from mayuri.utils.string import split_quotes
 from mayuri.utils.time import create_time, time_left, tl_time
 from pyrogram import enums, filters
@@ -38,7 +39,10 @@ async def cas_watcher(c,m):
 	for chat in sql.chat_list():
 		if chat.chat_id != m.chat.id:
 			try:
-				if not await check_admin(chat.chat_id,user_id):
+				if (
+					not await check_admin(chat.chat_id,user_id)
+					and not await check_approve(chat_id, user_id)
+				):
 					await c.ban_chat_member(chat.chat_id,user_id)
 			except RPCError as e:
 				print("{} | {}".format(e,chat.chat_name))
@@ -101,7 +105,7 @@ async def gban_task(c,m):
 		until = create_time(duration)
 	sql.add_to_gban(user.id,reason,until)
 	for chat in sql.chat_list():
-		if await check_admin(chat.chat_id,user.id):
+		if await check_admin(chat.chat_id,user.id) or await check_approve(chat_id, user.id):
 			continue
 		try:
 			if duration:
@@ -185,7 +189,7 @@ async def gmute_task(c,m):
 		until = create_time(duration)
 	sql.add_to_gmute(user.id,reason,until)
 	for chat in sql.chat_list():
-		if await check_admin(chat.chat_id,user.id):
+		if await check_admin(chat.chat_id,user.id) or await check_approve(chat_id, user.id):
 			continue
 		try:
 			if duration:
@@ -433,7 +437,7 @@ async def gban_watcher(c,m):
 	user_id = m.from_user.id
 	mention = m.from_user.mention
 	now = time.time()
-	if await check_admin(chat_id,user_id):
+	if await check_admin(chat_id,user_id) or await check_approve(chat_id, user_id):
 		return
 	check = sql.check_gban(user_id)
 	if not check:
@@ -466,7 +470,7 @@ async def gmute_watcher(c,m):
 	user_id = m.from_user.id
 	mention = m.from_user.mention
 	now = time.time()
-	if await check_admin(chat_id,user_id):
+	if await check_admin(chat_id,user_id) or await check_approve(chat_id, user_id):
 		return
 	check = sql.check_gmute(user_id)
 	if not check:
