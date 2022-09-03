@@ -1,21 +1,34 @@
-from mayuri import API_ID, API_HASH, BOT_TOKEN, WORKERS, init_help
+from mayuri import API_ID, API_HASH, BOT_SESSION, BOT_TOKEN, WORKERS, init_help
 from mayuri.plugins import list_all_plugins
 from pyrogram import Client
 
 class Mayuri(Client):
 	def __init__(self):
 		name = self.__class__.__name__.lower()
-		super().__init__(
-			name,
-			bot_token=BOT_TOKEN,
-			api_id=API_ID,
-			api_hash= API_HASH,
-			workers=WORKERS,
-			plugins=dict(
-				root=f"{name}.plugins"
-			),
-			sleep_threshold=180
-		)
+		if BOT_SESSION:
+			super().__init__(
+				name,
+				session_string=BOT_SESSION,
+				api_id=API_ID,
+				api_hash= API_HASH,
+				workers=WORKERS,
+				plugins=dict(
+					root=f"{name}.plugins"
+				),
+				sleep_threshold=180
+			)
+		else:
+			super().__init__(
+				name,
+				bot_token=BOT_TOKEN,
+				api_id=API_ID,
+				api_hash= API_HASH,
+				workers=WORKERS,
+				plugins=dict(
+					root=f"{name}.plugins"
+				),
+				sleep_threshold=180
+			)
 
 	async def start(self):
 		await super().start()

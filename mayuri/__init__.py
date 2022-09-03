@@ -1,22 +1,38 @@
+import os
 from importlib import import_module
-from mayuri.config import Config
 
 # Postgresql
 from sqlalchemy import create_engine, exc
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, scoped_session
 
-config = Config()
-API_ID = config.API_ID
-API_HASH = config.API_HASH
-BOT_TOKEN = config.BOT_TOKEN
-OWNER = config.OWNER
-DATABASE_URL = config.DATABASE_URL
-WORKERS = config.WORKERS
-PREFIX = config.CUSTOM_PREFIXS
-LOG_CHAT = config.LOG_CHAT
-LOG_STICKER = config.LOG_STICKER
-USE_OCR = config.USE_OCR
+ENV = os.environ.get("ENV", False)
+if ENV:
+	API_ID = os.environ.get("API_ID", None)
+	API_HASH = os.environ.get("API_HASH", None)
+	BOT_TOKEN = os.environ.get("BOT_TOKEN", None)
+	BOT_SESSION = os.environ.get("BOT_SESSION", None)
+	OWNER = os.environ.get("OWNER", None)
+	DATABASE_URL = os.environ.get("DATABASE_URL", None)
+	WORKERS = int(os.environ.get("WORKERS", 6))
+	PREFIX = os.environ.get("CUSTOM_PREFIXS", ['/', '$'])
+	LOG_CHAT = os.environ.get("LOG_CHAT", None)
+	LOG_STICKER = os.environ.get("LOG_STICKER", None)
+	USE_OCR = os.environ.get("USE_OCR", False)
+else:
+	from mayuri.config import Config
+	config = Config()
+	API_ID = config.API_ID
+	API_HASH = config.API_HASH
+	BOT_TOKEN = config.BOT_TOKEN
+	BOT_SESSION = config.BOT_SESSION
+	OWNER = config.OWNER
+	DATABASE_URL = config.DATABASE_URL
+	WORKERS = config.WORKERS
+	PREFIX = config.CUSTOM_PREFIXS
+	LOG_CHAT = config.LOG_CHAT
+	LOG_STICKER = config.LOG_STICKER
+	USE_OCR = config.USE_OCR
 
 DB_AVAILABLE = False
 
