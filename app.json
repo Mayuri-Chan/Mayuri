@@ -1,0 +1,59 @@
+{
+  "name": "Mayuri",
+  "description": "Telegram Group Management Bot",
+  "repository": "https://github.com/Mayuri-Chan/Mayuri",
+  "logo": "https://github.com/Mayuri-Chan/Mayuri/blob/test/img/logo.png",
+  "keywords": ["telegram", "group", "management", "pyrogram"],
+  "env": {
+      "API_ID": {
+      "description": "Get from https://my.telegram.org",
+      "value": ""
+    },
+      "API_HASH": {
+      "description": "Get from https://my.telegram.org",
+      "value": ""
+    },
+      "BOT_TOKEN": {
+      "description": "Your Bot token. Get from https://t.me/botfather, recommended for persistent storage. (Optional if fill BOT_SESSION)",
+      "value": "",
+      "required":false
+    },
+    "BOT_SESSION": {
+      "description": "Your Bot session. generate using string_session.py, recommended for ephemeral storage. (Optional if fill BOT_TOKEN)",
+      "value": "",
+      "required":false
+    },
+    "OWNER": {
+      "description": "Your Telegram user id.",
+      "value": ""
+    },
+    "DATABASE_URL": {
+      "description": "Your Prostgresql URI.",
+      "value": ""
+    },
+    "WORKERS": {
+      "description": "",
+      "value": "6"
+    },
+    "CLIENT_SECRET": {
+      "description": "Your Google CLIENT_SECRET. Refer project docs.",
+      "value": ""
+    },
+    "PREFIX": {
+      "description": "Your bot prefixes.",
+      "value": "['/', '$']"
+    },
+    "LOG_CHAT": {
+      "description": "Log chat id, for global restriction logs.",
+      "value": ""
+    },
+    "LOG_STICKER": {
+      "description": "Log chat id, for kang sticker.",
+      "value": ""
+    },
+    "USE_OCR": {
+      "description": "Whether to use ocr on blacklist or not.",
+      "value": "False"
+    }
+  }
+}

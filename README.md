@@ -5,6 +5,9 @@
 ==============
 You can found this bot on telegram as [Mayuri MK2](https://t.me/Mayuri17_Bot)  
   
+## Deploy  
+[![Develop on Okteto](https://okteto.com/develop-okteto.svg)](https://cloud.okteto.com/deploy)
+
 ## Thanks To
 
 • [Pyrogram](https://github.com/pyrogram)  

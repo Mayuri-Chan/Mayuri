@@ -1,0 +1,17 @@
+version: "3.9"
+services:
+ worker:
+  build: .
+  environment:
+   - ENV="True"
+   - API_ID=${API_ID}
+   - API_HASH=${API_HASH}
+   - BOT_TOKEN=${BOT_TOKEN}
+   - BOT_SESSION=${BOT_SESSION}
+   - OWNER=${OWNER}
+   - DATABASE_URL=${DATABASE_URL}
+   - WORKERS=${WORKERS}
+   - PREFIX=${CUSTOM_PREFIXS}
+   - LOG_CHAT=${LOG_CHAT}
+   - LOG_STICKER=${LOG_STICKER}
+   - USE_OCR=${USE_OCR}
