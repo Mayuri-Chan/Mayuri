@@ -161,9 +161,7 @@ async def blacklist_task(c,m):
 		if USE_OCR:
 			import cv2
 			import pytesseract
-			await m.download(target)
-			if not os.path.exists(target):
-				target = "mayuri/"+target
+			target = await m.download(target)
 			im = cv2.imread(target)
 			im = cv2.cvtColor(im, cv2.COLOR_BGR2RGB)
 			try:
@@ -180,8 +178,10 @@ async def blacklist_task(c,m):
 		return
 
 	for trigger in check:
-		ch = re.search(trigger.trigger.replace('"',''),text)
-		ch2 = re.search(trigger.trigger.replace('"',''),text2)
+		if text:
+			ch = re.search(trigger.trigger.replace('"',''),text)
+		if text2:
+			ch2 = re.search(trigger.trigger.replace('"',''),text2)
 		if ch or ch2:
 			data = {
 				'trigger': trigger.trigger,
