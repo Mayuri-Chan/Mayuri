@@ -1,6 +1,8 @@
 import asyncio
 import os
+import random
 import re
+import string
 
 from datetime import datetime
 from mayuri import PREFIX, USE_OCR
@@ -147,20 +149,17 @@ async def blacklist_task(c,m):
 	elif m.text:
 		text = unidecode(m.text).lower()
 	if m.photo or m.sticker or (m.document and m.document.mime_type in mt):
-		if m.photo:
-			target = "images/bl/{}.jpg".format(m.photo.file_id)
+		if m.photo or m.document:
+			target = "images/bl/{}.png"
 		elif m.sticker:
 			if m.sticker.is_animated or m.sticker.is_video:
 				return
-			target = "images/bl/{}.webp".format(m.sticker.file_id)
-		elif m.document:
-			if m.document.mime_type == "image/jpeg":
-				target = "images/bl/{}.jpg".format(m.document.file_id)
-			else:
-				target = "images/bl/{}.png".format(m.document.file_id)
+			target = "images/bl/{}.webp"
 		if USE_OCR:
 			import cv2
 			import pytesseract
+			file_name = ''.join(random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for i in range(10))
+			target = target.format(file_name)
 			target = await m.download(target)
 			im = cv2.imread(target)
 			im = cv2.cvtColor(im, cv2.COLOR_BGR2RGB)
