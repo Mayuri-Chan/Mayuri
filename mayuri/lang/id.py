@@ -264,4 +264,12 @@ Untuk menampilkan daftar perintah yang dapat di non-aktifkan
 	'infouser_is_channel': "Tolong reply ke pengguna bukan channel!",
 	'cas_log': "#CAS_GBAN\nCAS Global Ban Baru.\nChat: @{}\nPengguna: {}\nID Pengguna: `{}`\nAlasan: {}",
 	'cas_msg': "User {} telah di ban secara global\nAlasan: {}\n\nPowered by: Combot Anti Spam API",
+	'welcome_set': "Pesan Sambutan berhasil diatur",
+	'not_forum': "Grup ini bukan forum. silahkan hidupkan option topic terlebih dahulu!",
+	'welcome_not_set': "Pesan sambutan belum diatur di grup ini!",
+	'thread_id_set': "Berhasil.\nSemua pesan sambutan akan dikirim ke topic ini.",
+	'welcome_enabled': "Pesan sambutan diaktifkan!",
+	'welcome_disabled': "Pesan sambutan dinon-aktifkan!",
+	'welcome_settings': "**Pengaturan Pesan Sambutan:**\nAktif: {}\nPembersih Pesan Layanan: {}\nForum Thread ID: `{}`",
+	'default-welcome': "Selamat datang {first} di Grup {chatname}!",
 }
