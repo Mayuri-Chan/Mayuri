@@ -3,7 +3,7 @@ opencv-python
 pendulum
 psycopg2-binary
 pymoe
-pyrogram
+git+https://github.com/wulan17/pyrogram@dev/topics
 pytesseract
 requests
 sqlalchemy
