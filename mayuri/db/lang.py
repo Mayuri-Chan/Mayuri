@@ -19,6 +19,15 @@ class Lang(BASE):
 Lang.__table__.create(checkfirst=True)
 LANG_INSERTION_LOCK = threading.RLock()
 
+def set_lang(chat_id,lang):
+	prev = SESSION.query(Lang).get(str(chat_id))
+	if prev:
+		SESSION.delete(prev)
+		SESSION.commit()
+	lang_filt = Lang(chat_id, lang)
+	SESSION.merge(lang_filt)
+	SESSION.commit()
+
 def check_lang(chat_id):
 	with LANG_INSERTION_LOCK:
 		find = SESSION.query(Lang).get(str(chat_id))

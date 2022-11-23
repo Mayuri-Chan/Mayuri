@@ -1,12 +1,15 @@
 import asyncio
+import importlib
 import os
 import re
 import sys
 import time
 from datetime import datetime
 from mayuri import HELP_COMMANDS, OWNER, PREFIX
-from mayuri.db import global_restrict as grsql
+from mayuri.db import global_restrict as grsql, lang as lang_db
+from mayuri.lang import list_all_lang
 from mayuri.mayuri import Mayuri
+from mayuri.plugins.admin import check_admin
 from mayuri.utils.filters import sudo_only
 from mayuri.utils.lang import tl
 from mayuri.utils.misc import check_channel, paginate_plugins
@@ -243,3 +246,42 @@ async def user_info(c,m):
 		await m.reply_photo(photo=open(target, 'rb'), caption=text)
 		return os.remove(target)
 	await msg.edit_text(text)
+
+
+@Mayuri.on_message(filters.command("setlang", PREFIX) | filters.command("lang", PREFIX))
+async def set_language(c,m):
+	chat_id = m.chat.id
+	#text = m.text.split(None, 1)
+	if m.chat.type != enums.ChatType.PRIVATE and not await check_admin(chat_id,m.from_user.id):
+		return
+	#if len(text) > 1:
+	#	lang = text[1]
+	buttons = []
+	temp = []
+	i = 1
+	for lang in list_all_lang():
+		t = importlib.import_module("mayuri.lang."+lang)
+		data = "setlang_{}".format(lang)
+		temp.append(InlineKeyboardButton(text=t.lang_name, callback_data=data))
+		if i % 2 == 0:
+			buttons.append(temp)
+			temp = []
+		if i == len(list_all_lang()):
+			buttons.append(temp)
+		i += 1
+	await m.reply_text(text=(await tl(chat_id, "select_lang")), reply_markup=InlineKeyboardMarkup(buttons))
+
+async def set_lang_callback(_, __, query):
+	if re.match(r"setlang_", query.data):
+		return True
+
+set_lang_create = filters.create(set_lang_callback)
+
+@Mayuri.on_callback_query(set_lang_create)
+async def set_lang_respond(c,q):
+	m = q.message
+	if m.chat.type != enums.ChatType.PRIVATE and not await check_admin(m.chat.id,q.from_user.id):
+		return await c.answer_callback_query(callback_query_id=q.id, text="You're not admin!", show_alert=True)
+	lang = q.data[8:]
+	lang_db.set_lang(m.chat.id,lang)
+	await m.edit(text=await tl(m.chat.id, "language_changed"))

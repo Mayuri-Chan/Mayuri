@@ -1,4 +1,7 @@
+lang_name = "🇮🇩 Indonesia"
 text = {
+	'select_lang': "Silahkan pilih bahasa yang ingin anda gunakan:",
+	'language_changed': "Bahasa berhasil diubah menjadi {}".format(lang_name),
 	'pm_me': "Hubungi saya di PM.",
 	'not_user': "Itu bukan user!",
 	'added_to_sudo': "User {} telah ditambahkan ke SUDO",
