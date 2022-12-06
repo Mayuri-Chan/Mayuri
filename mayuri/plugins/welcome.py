@@ -275,7 +275,7 @@ async def gen_captcha(m,verify_id):
 	result = eval(math)
 	math = math.replace("*","X")
 	path = r"mayuri/images/captcha/{}.png".format(user_id)
-	gen_math_image(math,path,"grey")
+	gen_math_image(math,path,"mayuri2")
 	buttons = gen_button(result,verify_id)
 	return path, buttons, result
 
