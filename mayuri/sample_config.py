@@ -13,3 +13,4 @@ class Config(object):
 	LOG_CHAT = -1001233232 # required for global restrictions
 	LOG_STICKER = -1001233232 # required for kang sticker
 	USE_OCR = False # you need to install tesseract on your server to enable ocr
+	SPAMWATCH_TOKEN = "" # from @SpamWatchBot

@@ -10,13 +10,17 @@ class Welcome(BASE):
 	thread_id = Column(BigInteger)
 	enable = Column(Boolean)
 	clean_service = Column(Boolean)
+	is_captcha = Column(Boolean)
+	verif_text = Column(UnicodeText)
 
-	def __init__(self,chat_id,text,thread_id,enable,clean_service):
+	def __init__(self,chat_id,text,thread_id,enable,clean_service,is_captcha,verif_text):
 		self.chat_id = str(chat_id)
 		self.text = text
 		self.thread_id = thread_id
 		self.enable = enable
 		self.clean_service = clean_service
+		self.is_captcha = is_captcha
+		self.verif_text = verif_text
 
 	def __repr__(self):
 		return "<Welcome for %s>" % (self.chat_id)
@@ -25,14 +29,14 @@ class Welcome(BASE):
 Welcome.__table__.create(checkfirst=True)
 WELCOME_INSERTION_LOCK = threading.RLock()
 
-def set_welcome(chat_id,text,thread_id,enable,clean_service):
+def set_welcome(chat_id,text,thread_id,enable,clean_service,is_captcha,verif_text):
 	with WELCOME_INSERTION_LOCK:
 		prev = SESSION.query(Welcome).get(chat_id)
 		if prev:
 			SESSION.delete(prev)
 			SESSION.commit()
 
-		welcome_filt = Welcome(chat_id,text,thread_id,enable,clean_service)
+		welcome_filt = Welcome(chat_id,text,thread_id,enable,clean_service,is_captcha,verif_text)
 		SESSION.merge(welcome_filt)
 		SESSION.commit()
 

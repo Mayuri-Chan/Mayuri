@@ -4,8 +4,8 @@ import requests
 import time
 
 from datetime import datetime
-from mayuri import LOG_CHAT, OWNER, PREFIX
-from mayuri.db import global_restrict as sql
+from mayuri import LOG_CHAT, OWNER, PREFIX, SPAMWATCH_TOKEN
+from mayuri.db import global_restrict as sql, welcome as wsql
 from mayuri.mayuri import Mayuri
 from mayuri.plugins.admin import check_admin
 from mayuri.plugins.sudo import check_sudo
@@ -21,20 +21,31 @@ from pyrogram.types import ChatPermissions
 #__PLUGIN__ = "blacklist"
 #__HELP__ = "blacklist_help"
 
-@Mayuri.on_message(filters.group, group=70)
 async def cas_watcher(c,m):
-	if m.sender_chat:
-		return
 	chat_id = m.chat.id
 	chat_name = m.chat.username
 	user_id = m.from_user.id
 	mention = m.from_user.mention
-	r = requests.get("https://api.cas.chat/check?user_id={}".format(user_id)).json()
-	if not r["ok"]:
-		return
-	reason = "[CAS #{}](https://cas.chat/query?u={})".format(user_id,user_id)
-	msg = await m.reply("Gbanning...")
-	await c.ban_chat_member(chat_id,user_id)
+	try:
+		r = requests.get("https://api.cas.chat/check?user_id={}".format(user_id))
+	except requests.exceptions.RequestException as e:
+		print(e)
+		return False
+	except Exception:
+		return False
+	r = r.json()
+	if not r:
+		return False
+	if r["ok"]:
+		reason = "[CAS #{}](https://cas.chat/query?u={})".format(user_id,user_id)
+	else:
+		return False
+	if m.chat.is_forum:
+		check = wsql.get_welcome(chat_id)
+		msg = await c.send_message(chat_id=chat_id, text="Gbanning...", message_thread_id=check.thread_id)
+	else:
+		msg = await m.reply("Gbanning...")
+	await c.ban_chat_member(int(chat_id),user_id)
 	sql.add_to_gban(user_id,reason,0)
 	for chat in sql.chat_list():
 		if chat.chat_id != m.chat.id:
@@ -43,13 +54,48 @@ async def cas_watcher(c,m):
 					not await check_admin(chat.chat_id,user_id)
 					and not await check_approve(chat_id, user_id)
 				):
-					await c.ban_chat_member(chat.chat_id,user_id)
+					await c.ban_chat_member(int(chat.chat_id),user_id)
 			except RPCError as e:
 				print("{} | {}".format(e,chat.chat_name))
 	log = (await tl(chat_id, "cas_log")).format(chat_name,mention,user_id,reason)
 	text = (await tl(chat_id, "cas_msg")).format(mention,reason)
 	await msg.edit(text, disable_web_page_preview=True)
 	await c.send_message(chat_id=LOG_CHAT, text=log)
+	return True
+
+async def sw_watcher(c,m):
+	chat_id = m.chat.id
+	chat_name = m.chat.username
+	user_id = m.from_user.id
+	mention = m.from_user.mention
+	path = f"https://api.spamwat.ch/banlist/{user_id}"
+	headers = {"Authorization": f"Bearer {SPAMWATCH_TOKEN}"}
+	r = requests.get(url=path, headers=headers)
+	if int(r.status_code) == 404:
+		return False
+	if int(r.status_code) == 200 or int(r.status_code) == 201:
+		r = r.json()
+		reason = "SpamWatch: {}".format(r['reason'])
+		if m.chat.is_forum:
+			check = wsql.get_welcome(chat_id)
+			msg = await c.send_message(chat_id=chat_id, text="Gbanning...", message_thread_id=check.thread_id)
+		else:
+			msg = await m.reply("Gbanning...")
+		await c.ban_chat_member(int(chat_id),user_id)
+		sql.add_to_gban(user_id,reason,0)
+		for chat in sql.chat_list():
+			if chat.chat_id != m.chat.id:
+				try:
+					if not await check_admin(str(chat.chat_id),user_id):
+						await c.ban_chat_member(int(chat.chat_id),user_id)
+				except RPCError as e:
+					print("{} | {}".format(e,chat.chat_name))
+		log = (await tl(chat_id, "sw_log")).format(chat_name,mention,user_id,reason)
+		text = (await tl(chat_id, "sw_msg")).format(mention,reason)
+		await msg.edit(text, disable_web_page_preview=True)
+		await c.send_message(chat_id=LOG_CHAT, text=log)
+		return True
+	return False
 
 async def gban_task(c,m):
 	chat_id = m.chat.id
@@ -437,13 +483,21 @@ async def gban_watcher(c,m):
 	user_id = m.from_user.id
 	mention = m.from_user.mention
 	now = time.time()
+	check = wsql.get_welcome(chat_id)
+	if m.service and (check and check.is_captcha):
+		return
+	if await cas_watcher(c,m):
+		if not await check_admin(chat_id,user_id) and not await check_approve(chat_id, user_id):
+			await c.ban_chat_member(int(chat_id),user_id)
+		return
+	if await sw_watcher(c,m):
+		if not await check_admin(chat_id,user_id) and not await check_approve(chat_id, user_id):
+			await c.ban_chat_member(int(chat_id),user_id)
+		return
 	if await check_admin(chat_id,user_id) or await check_approve(chat_id, user_id):
 		return
 	check = sql.check_gban(user_id)
 	if not check:
-		return
-	exp = r"CAS #{}$".format(user_id)
-	if check.reason and re.match(exp, check.reason):
 		return
 	until = check.until
 	if until != 0:
@@ -515,5 +569,5 @@ async def chat_watcher(c,m):
 	check = sql.check_chat(chat_id)
 	if not check:
 		return sql.add_chat(chat_id, chat_name)
-	if check.chat_name != chat_name:
+	if chat_name and check.chat_name != chat_name:
 		return sql.add_chat(chat_id, chat_name)

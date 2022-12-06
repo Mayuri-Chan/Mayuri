@@ -2,14 +2,16 @@ import asyncio
 import importlib
 import os
 import re
+import requests
 import sys
 import time
 from datetime import datetime
-from mayuri import HELP_COMMANDS, OWNER, PREFIX
-from mayuri.db import global_restrict as grsql, lang as lang_db
+from mayuri import HELP_COMMANDS, LOG_CHAT, OWNER, PREFIX, SPAMWATCH_TOKEN
+from mayuri.db import global_restrict as grsql, lang as lang_db, verify as vsql
 from mayuri.lang import list_all_lang
 from mayuri.mayuri import Mayuri
 from mayuri.plugins.admin import check_admin
+from mayuri.plugins.welcome import gen_captcha
 from mayuri.utils.filters import sudo_only
 from mayuri.utils.lang import tl
 from mayuri.utils.misc import check_channel, paginate_plugins
@@ -40,16 +42,113 @@ async def alive(c, m):
 	text = alive_text+"\n•  📶 Latency        : {}ms".format(latency)
 	await msg.edit(text)
 
+def check_cas(user_id):
+	try:
+		r = requests.get("https://api.cas.chat/check?user_id={}".format(user_id))
+	except requests.exceptions.RequestException:
+		return "unknown"
+	r = r.json()
+	if not r:
+		return False
+	if r["ok"]:
+		return True
+	return False
+
+def check_spamwatch(user_id):
+	path = f"https://api.spamwat.ch/banlist/{user_id}"
+	headers = {"Authorization": f"Bearer {SPAMWATCH_TOKEN}"}
+	r = requests.get(url=path, headers=headers)
+	if int(r.status_code) == 200 or int(r.status_code) == 201:
+		return r
+	if int(r.status_code) == 404:
+		return False
+	return "unknown"
+
 @Mayuri.on_message(filters.command("start", PREFIX))
 async def start_msg(c, m):
 	chat_id = m.chat.id
+	if m.chat.type == enums.ChatType.CHANNEL:
+		return await m.edit_text("chat_id: `{}`".format(m.chat.id))
 	if m.chat.type != enums.ChatType.PRIVATE:
 		return await m.reply_text(await tl(chat_id, "pm_me"))
+	t = m.text.split()
 	keyboard = None
 	text = "hello!\n"
 	text += "This bot is under development."
 	text += "\nYou can contact my master [here](tg://user?id={})\n\n".format(OWNER)
 	text += "Powered by [Pyrogram v{}](https://pyrogram.org)".format(__version__)
+	if len(t) > 1 and re.match(r"verif_.*", t[1]):
+		r = re.search("(verif_)([a-zA-Z0-9]{1,})",t[1])
+		verify_id = r.group(2)
+		verify_data = vsql.get_captcha(verify_id)
+		user_id = m.from_user.id
+		if not verify_data:
+			return await m.reply_text("Requested verification key not found or expired!\nPlease rejoin the groups to request new keys.",reply_markup=keyboard)
+		if int(user_id) != verify_data.user_id:
+			return await m.reply_text(text=await tl(chat_id, 'not_your_captcha'))
+		cas_status = check_cas(user_id)
+		sw_status = check_spamwatch(user_id)
+		msg = await m.reply_text("Checking your account...")
+		is_gban = False
+		reason = ""
+		if not cas_status:
+			cas_result = "✅"
+		elif cas_status == "unknown":
+			cas_result = "❔"
+		else:
+			is_gban = True
+			reason = f"[CAS#{user_id}](https://cas.chat/query?u={user_id})"
+			cas_result = f"❌ ([CAS#{user_id}](https://cas.chat/query?u={user_id}))"
+		if not sw_status:
+			sw_result = "✅"
+		elif sw_status == "unknown":
+			sw_result = "❔"
+		else:
+			is_gban = True
+			if reason:
+				reason += " + "
+			sw_status = sw_status.json()
+			reason += f"SpamWatch: {sw_status['reason']}"
+			sw_result = f"❌ (SpamWatch: {sw_status['reason']})"
+		text = f"Done\nCAS: {cas_result}\nSpamWatch: {sw_result}"
+		if is_gban:
+			if not verify_data.is_mute:
+				try:
+					await c.decline_chat_join_request(verify_data.chat_id,user_id)
+				except RPCError:
+					pass
+			chat_name = (await c.get_chat(verify_data.chat_id)).username
+			mention = m.from_user.mention
+			await c.ban_chat_member(int(chat_id),user_id)
+			grsql.add_to_gban(user_id,reason,0)
+			text = "\n\nYour account has been detected as spammer and has globally banned in this bot!"
+			for chat in grsql.chat_list():
+				try:
+					if not await check_admin(str(chat.chat_id),user_id):
+						await c.ban_chat_member(int(chat.chat_id),user_id)
+				except RPCError as e:
+					print("{} | {}".format(e,chat.chat_name))
+			log = (await tl(chat_id, "cas_log")).format(chat_name,mention,user_id,reason)
+			await msg.edit(text)
+			vsql.rm_from_verify(verify_id)
+			msg = await c.get_messages(chat_id=chat_id,message_ids=[msg_id])
+			text = (await tl(chat_id, "cas_sw_welcome_log")).format(mention,reason)
+			await msg[0].edit(text=text, reply_markup=None)
+			return c.send_message(chat_id=LOG_CHAT, text=log)
+		await msg.edit(text)
+		path, buttons, result = await gen_captcha(m,verify_id)
+		await c.send_chat_action(m.chat.id, enums.ChatAction.UPLOAD_PHOTO)
+		await m.reply_photo(photo=open(path, 'rb'), caption="Select the correct answers:", reply_markup=InlineKeyboardMarkup(buttons))
+		await c.send_chat_action(m.chat.id, enums.ChatAction.CANCEL)
+		vsql.add_to_verify(
+			verify_id,
+			verify_data.chat_id,
+			verify_data.user_id,
+			result,verify_data.is_mute,
+			verify_data.msg_id,
+			verify_data.time
+		)
+		return os.remove(path)
 	await m.reply_text(text,reply_markup=keyboard)
 
 async def help_parser(c, chat_id, text, keyboard=None):

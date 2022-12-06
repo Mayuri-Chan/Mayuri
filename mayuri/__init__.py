@@ -19,6 +19,7 @@ if ENV:
 	LOG_CHAT = os.environ.get("LOG_CHAT", None)
 	LOG_STICKER = os.environ.get("LOG_STICKER", None)
 	USE_OCR = os.environ.get("USE_OCR", False)
+	SPAMWATCH_TOKEN = os.environ.get("SPAMWATCH_TOKEN", None)
 else:
 	from mayuri.config import Config
 	config = Config()
@@ -33,6 +34,7 @@ else:
 	LOG_CHAT = config.LOG_CHAT
 	LOG_STICKER = config.LOG_STICKER
 	USE_OCR = config.USE_OCR
+	SPAMWATCH_TOKEN = config.SPAMWATCH_TOKEN
 
 DB_AVAILABLE = False
 
