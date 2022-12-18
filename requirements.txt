@@ -4,6 +4,7 @@ pendulum
 psycopg2-binary
 pymoe
 git+https://github.com/wulan17/pyrogram@dev/topics
+pyston_lite_autoload
 pytesseract
 requests
 sqlalchemy
