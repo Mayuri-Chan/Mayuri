@@ -1,3 +1,4 @@
+apscheduler==3.9.1.post1
 httpx[http2]
 opencv-python
 pendulum
@@ -9,4 +10,5 @@ pytesseract
 requests
 sqlalchemy
 tgcrypto
+tzlocal
 unidecode

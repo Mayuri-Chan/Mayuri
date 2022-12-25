@@ -12,23 +12,6 @@ from pyrogram.errors import FloodWait, RPCError
 __PLUGIN__ = "admin"
 __HELP__ = "admin_help"
 
-@Mayuri.on_message(filters.group, group=100)
-async def adminlist_watcher(c,m):
-	chat_id = m.chat.id
-	current_time = int(time.time())
-	last_sync = sql.get_last_sync(chat_id)
-	if last_sync != 'NA':
-		if int(last_sync.last_sync) > current_time-21600:
-			return
-		sql.remove_admin_list(chat_id)
-	try:
-		all_admin = c.get_chat_members(chat_id, filter=enums.ChatMembersFilter.ADMINISTRATORS)
-	except FloodWait as e:
-		await asyncio.sleep(e.value)
-	async for admin in all_admin:
-		await sql.add_admin_to_list(chat_id,admin.user.id,admin.user.username)
-	sql.update_last_sync(chat_id,current_time)
-
 async def check_admin(chat_id, user_id):
 	data = sql.check_admin(str(chat_id),user_id)
 	if data:
