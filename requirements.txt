@@ -4,7 +4,7 @@ opencv-python
 pendulum
 psycopg2-binary
 pymoe
-git+https://github.com/wulan17/pyrogram@dev/topics
+git+https://github.com/Mayuri-Chan/pyrogram@dev/pyrofork
 pyston_lite_autoload
 pytesseract
 requests
