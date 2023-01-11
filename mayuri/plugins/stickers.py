@@ -276,6 +276,7 @@ def resize_image(filename: str) -> str:
 	height = int(im.shape[0])
 	scale = maxsize / max(width, height)
 	sizenew = (int(width * scale), int(height * scale))
+	im = cv2.cvtColor(im, cv2.COLOR_BGR2BGRA)
 	im = cv2.resize(im, sizenew, interpolation=cv2.INTER_NEAREST)
 	downpath, f_name = os.path.split(filename)
 	# not hardcoding png_image as "sticker.png"
