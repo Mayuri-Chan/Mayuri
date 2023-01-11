@@ -1,4 +1,4 @@
-apscheduler==3.9.1.post1
+git+https://github.com/agronholm/apscheduler.git@master
 httpx[http2]
 opencv-python
 pendulum

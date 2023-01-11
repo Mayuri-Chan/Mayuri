@@ -1,5 +1,4 @@
 import os
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from importlib import import_module
 
 # Postgresql
@@ -53,7 +52,6 @@ def mulaisql() -> scoped_session:
 	return scoped_session(sessionmaker(bind=engine, autoflush=False))
 
 
-scheduler = AsyncIOScheduler()
 BASE = declarative_base()
 SESSION = mulaisql()
 HELP_COMMANDS = {}

@@ -1,8 +1,12 @@
 import asyncio
 import time
 
+from apscheduler import RunState
+from apscheduler.schedulers.async_ import AsyncScheduler
+from apscheduler.triggers.cron import CronTrigger
+from apscheduler.triggers.interval import IntervalTrigger
 from datetime import datetime
-from mayuri import API_ID, API_HASH, BOT_SESSION, BOT_TOKEN, WORKERS, init_help, scheduler
+from mayuri import API_ID, API_HASH, BOT_SESSION, BOT_TOKEN, WORKERS, init_help
 from mayuri.db import admin as asql, global_restrict as grsql
 from mayuri.plugins import list_all_plugins
 from mayuri.utils.lang import tl
@@ -37,12 +41,11 @@ class Mayuri(Client):
 				),
 				sleep_threshold=180
 			)
+		self.scheduler = None
 
 	async def start(self):
 		await super().start()
-		scheduler.add_job(self.adminlist_watcher, "interval", seconds=21600) # run once every 2 hours
-		scheduler.add_job(self.deleted_account_watcher, "cron", hour=18) # run once everyday at 6pm server time
-		scheduler.start()
+		await self.start_scheduler()
 		await init_help(list_all_plugins())
 		print("---[Mayuri Services is Running...]---")
 
@@ -51,16 +54,33 @@ class Mayuri(Client):
 		print("---[Bye]---")
 		print("---[Thankyou for using my bot...]---")
 
+	async def start_scheduler(self):
+		# Initialize the scheduler
+		self.scheduler = AsyncScheduler()
+		await self.scheduler.__aenter__()
+
+		# check if scheduler is already started
+		if self.scheduler.state == RunState.stopped:
+			# run every 2 hours
+			await self.scheduler.add_schedule(self.adminlist_watcher, IntervalTrigger(seconds=21600))
+			# run every Monday and Thursday 6 pm server time
+			await self.scheduler.add_schedule(self.deleted_account_watcher, CronTrigger(day_of_week="mon,thu", hour=18))
+			# Run the scheduler in background
+			await self.scheduler.start_in_background()
+
 	async def deleted_account_watcher(self):
-		next_time = datetime.fromtimestamp(int(time.time() + (3600*24)))
+		if datetime.strftime("%a") == "Mon":
+			next_time = datetime.fromtimestamp(int(time.time() + (3600*24*3)))
+		else:
+			next_time = datetime.fromtimestamp(int(time.time() + (3600*24*4)))
 		tz = datetime.now(get_localzone()).strftime("%Z")
 		next_clean = f"{next_time} {tz}"
 		for chat in grsql.chat_list():
-			if not chat.chat_name: # Clean only public group
+			if chat.chat_name == "None": # Clean only public group
 				continue
 			try:
 				chat_members_count = await self.get_chat_members_count(chat.chat_id)
-				if chat_members_count >= 4000:
+				if chat_members_count >= 3000:
 					continue
 				chat_members = self.get_chat_members(chat.chat_id)
 			except FloodWait as e:
