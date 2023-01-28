@@ -63,6 +63,11 @@ Untuk mencuri sticker.
 	'cannot_create_pack': "Terjadi kesalahan saat membuat Stickerpack!",
 	'show_pack': "Lihat Stickerpack",
 	'sticker_kanged': "Sticker berhasil dikang.",
+	'stickerpackinvalid': "Sticker tidak berasal dari Stickerpack yang dibuat bot ini!",
+	'notyourstickerpack': "Sticker tidak berasal dari Stickerpack anda!",
+	'stickerinvalid': "Tidak dapat menghapus sticker, pastikan sticker berada dalam stickerpack yang dibuat melalui bot ini!",
+	'stickerdeleted': "Sticker berhasil dihapus dari stickerpack.",
+	'notreplytosticker': "Reply ke sticker yang ingin anda hapus dari stickerpack!",
 	'blacklist': "Daftar hitam",
 	'blacklist_help': """Module ini digunakan untuk melarang penggunaan suatu kata dalam pesan.
 [Word Blacklist]
