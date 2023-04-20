@@ -1,3 +1,4 @@
+import ast
 import asyncio
 import time
 
@@ -7,10 +8,10 @@ from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.interval import IntervalTrigger
 from datetime import datetime
 from mayuri import API_ID, API_HASH, BOT_SESSION, BOT_TOKEN, WORKERS, init_help
-from mayuri.db import admin as asql, global_restrict as grsql
+from mayuri.db import settings as sql, admin as asql, global_restrict as grsql
 from mayuri.plugins import list_all_plugins
 from mayuri.utils.lang import tl
-from pyrogram import Client, enums
+from pyrogram import Client, enums, raw
 from pyrogram.errors import FloodWait
 from tzlocal import get_localzone
 
@@ -45,11 +46,15 @@ class Mayuri(Client):
 
 	async def start(self):
 		await super().start()
+		await self.catch_up()
 		await self.start_scheduler()
 		await init_help(list_all_plugins())
 		print("---[Mayuri Services is Running...]---")
 
 	async def stop(self, *args):
+		state = await self.invoke(raw.functions.updates.GetState())
+		value = {"pts": state.pts, "qts": state.qts, "date": state.date}
+		sql.update_settings("state", str(value))
 		await super().stop()
 		print("---[Bye]---")
 		print("---[Thankyou for using my bot...]---")
@@ -111,3 +116,43 @@ class Mayuri(Client):
 				await asyncio.sleep(e.value)
 			async for admin in all_admin:
 				await asql.add_admin_to_list(chat.chat_id,admin.user.id,admin.user.username)
+
+	async def catch_up(self):
+		print("---[Recovering gaps...]---")
+		while(True):
+			state = sql.get_settings("state")
+			if not state:
+				return
+			value = ast.literal_eval(state.value)
+			diff = await self.invoke(
+					raw.functions.updates.GetDifference(
+						pts=int(value["pts"]),
+						date=int(value["date"]),
+						qts=-1
+					)
+				)
+			if isinstance(diff, raw.types.updates.DifferenceEmpty):
+				new_value = {"pts": value["pts"], "qts": value["qts"], "date": diff.date}
+				sql.update_settings("state", str(new_value))
+				break
+			elif isinstance(diff, raw.types.updates.DifferenceTooLong):
+				new_value = {"pts": diff.pts, "qts": value["qts"], "date": value["date"]}
+				sql.update_settings("state", str(new_value))
+				continue
+			users = {u.id: u for u in diff.users}
+			chats = {c.id: c for c in diff.chats}
+			for msg in diff.new_messages:
+				self.dispatcher.updates_queue.put_nowait((
+					raw.types.UpdateNewMessage(
+						message=msg,
+						pts=diff.state.pts,
+						pts_count=-1
+					),
+					users,
+					chats
+				))
+
+			for update in diff.other_updates:
+				self.dispatcher.updates_queue.put_nowait((update, users, chats))
+			if isinstance(diff, raw.types.updates.Difference):
+				break
