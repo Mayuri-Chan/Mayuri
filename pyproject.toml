@@ -1,0 +1,26 @@
+[tool.poetry]
+name = "mayuri"
+version = "3.0.0"
+description = "Modular Telegram Bot based on PyroFork"
+license = "GPL-3.0-or-later"
+authors = ["wulan17 <wulan17@nusantararom.org>"]
+readme = "README.md"
+repository = "https://github.com/Mayuri-Chan/Mayuri"
+
+[tool.poetry.dependencies]
+python = "~=3.9"
+async-pymongo = "0.1.2"
+uvloop = "^0.17.0"
+python-dotenv = "^1.0.0"
+tgcrypto = "^1.2.5"
+httpx = {extras = ["http2"], version = "^0.24.1"}
+colorlog = "^6.7.0"
+meval = "^2.5"
+apscheduler = {git = "https://github.com/agronholm/apscheduler.git", rev = "master"}
+pyrofork = "2.2.1"
+tomli = "^2.0.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

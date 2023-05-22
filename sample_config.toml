@@ -1,0 +1,31 @@
+[telegram]
+# Get thais value from https://my.telegram.org/apps
+API_ID=12345
+API_HASH=""
+
+[bot]
+# Bot token generated from https://t.me/botfather
+BOT_TOKEN=""
+
+# Custom command prefixes
+PREFIX=['$', '/']
+
+# Your telegram user id
+# You won't be able to trigger sudo's command if this vars is blank
+OWNER=12345
+
+# Leave this blank if you are using docker-compose
+# Or if you want to use the mongodb atlas, you need to modify file `docker-compose.yml`.
+# Mongodb url from https://cloud.mongodb.com/
+DATABASE_URL=""
+
+# Bot log channel
+# Also Known as the message dump
+# Fill with channel id or channel username
+LOG_CHAT=""
+
+# Number of maximum worker for handling incoming updates.
+WORKERS=6
+
+[sticker]
+LOG_STICKER=""
