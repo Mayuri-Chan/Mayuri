@@ -299,3 +299,68 @@ def resize_image(filename: str) -> str:
 	if png_image != filename:
 		os.remove(filename)
 	return png_image
+
+@Mayuri.on_message(filters.command("delsticker", PREFIX))
+@disable
+async def cmd_delsticker(c, m):
+	chat_id = m.chat.id
+	user_id = m.from_user.id
+	bot_username = c.me.username
+	prog_msg = await m.reply_text(await c.tl(chat_id, "processing"))
+	bot_username = c.me.username
+	reply = m.reply_to_message
+	user = await c.resolve_peer(m.from_user.username or m.from_user.id)
+	filename = ""
+	if reply and reply.sticker:
+		packname = reply.sticker.set_name
+		r = r"(c)([0-9]{})(_by_)({})".format("{1,}",bot_username)
+		res = re.search(r, packname)
+		if not res:
+			return await prog_msg.edit(await c.tl(chat_id, "stickerpackinvalid"))
+		else:
+			if not int(res.group(2)) == int(user_id):
+				return await prog_msg.edit(await c.tl(chat_id, "notyourstickerpack"))
+		if m.chat.type == enums.ChatType.PRIVATE:
+			media = await c.invoke(
+				GetUserMessages(
+					id=[InputMessageID(id=reply.id)],
+				)
+			)
+		else:
+			media = await c.invoke(
+				GetChannelMessages(
+					channel=(await c.resolve_peer(chat_id)),
+					id=[InputMessageID(id=reply.id)],
+				)
+			)
+		stkr = media.messages[0].media.document
+		sticker_emoji = None
+		for attr in stkr.attributes:
+			if isinstance(attr, DocumentAttributeSticker) and hasattr(attr, "alt"):
+				sticker_emoji = attr.alt
+		try:
+				await c.invoke(
+					RemoveStickerFromSet(
+						sticker=InputDocument(
+							id=stkr.id,
+							access_hash=stkr.access_hash,
+							file_reference=stkr.file_reference,
+						),
+					)
+				)
+		except Exception as e:
+			print(e)
+			return await prog_msg.edit(await c.tl(chat_id, "stickerinvalid"))
+
+		markup = InlineKeyboardMarkup(
+			[
+				[
+					InlineKeyboardButton(
+						await c.tl(chat_id, "show_pack"),
+						url=f"t.me/addstickers/{packname}",
+					)
+				]
+			]
+		)
+		return await prog_msg.edit((await c.tl(chat_id, "stickerdeleted")), reply_markup=markup)
+	await prog_msg.edit((await c.tl(chat_id, "notreplytosticker")))

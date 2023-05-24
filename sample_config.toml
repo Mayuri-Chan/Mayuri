@@ -28,4 +28,6 @@ LOG_CHAT=""
 WORKERS=6
 
 [sticker]
+# Log channel for dumping sticker
+# for kang command
 LOG_STICKER=""
