@@ -19,6 +19,7 @@ meval = "^2.5"
 apscheduler = {git = "https://github.com/agronholm/apscheduler.git", rev = "master"}
 pyrofork = "2.2.1"
 tomli = "^2.0.1"
+opencv-python = "^4.7.0.72"
 
 
 [build-system]
