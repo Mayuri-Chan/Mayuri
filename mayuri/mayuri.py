@@ -153,6 +153,13 @@ class Mayuri(Client):
 			return True
 		return False
 
+	async def check_approved(self, chat_id, user_id):
+		db = self.db["chat_settings"]
+		check = await db.find_one({"chat_id": chat_id})
+		if check and "approved" in check and user_id in check["approved"]:
+			return True
+		return False
+
 	async def check_sudo(self, user_id):
 		db = self.db["bot_settings"]
 		check = await db.find_one({'name': 'sudo_list'})

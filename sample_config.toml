@@ -27,6 +27,10 @@ LOG_CHAT=""
 # Number of maximum worker for handling incoming updates.
 WORKERS=6
 
+[blacklist]
+# wether to use ocr in blacklist text
+USE_OCR=false
+
 [sticker]
 # Log channel for dumping sticker
 # for kang command
