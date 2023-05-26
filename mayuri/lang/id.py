@@ -289,7 +289,7 @@ Untuk menampilkan daftar perintah yang dapat di non-aktifkan
 	'thread_id_set': "Berhasil.\nSemua pesan sambutan akan dikirim ke topic ini.",
 	'welcome_enabled': "Pesan sambutan diaktifkan!",
 	'welcome_disabled': "Pesan sambutan dinon-aktifkan!",
-	'welcome_settings': "**Pengaturan Pesan Sambutan:**\nAktif: {}\nPembersih Pesan Layanan: {}\nForum Thread ID: `{}`\nCaptcha: {}",
+	'welcome_settings': "**Pengaturan Pesan Sambutan:**\nAktif: {}\nPembersih Pesan Layanan: {}\nForum Thread ID: `{}`",
 	'default-welcome': "Selamat datang {first} di Grup {chatname}!",
 	'verif_text': "Klik disini untuk verifikasi!",
 	'not_your_captcha': "ID verify dan ID User tidak cocok!",
