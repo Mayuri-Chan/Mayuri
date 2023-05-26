@@ -1,4 +1,5 @@
 import re
+import requests
 import time
 
 from datetime import datetime
@@ -16,6 +17,61 @@ async def chat_watcher(c,m):
 	db = c.db["chat_list"]
 	chat_id = m.chat.id
 	await db.update_one({'chat_id': chat_id},{"$set": {'chat_username': m.chat.username, 'chat_name': m.chat.title}}, upsert=True)
+
+@Mayuri.on_message(filters.group, group=104)
+async def cas_watcher(c,m):
+	db = c.db["gban_list"]
+	chat_db = c.db["chat_list"]
+	if m.sender_chat:
+		return
+	if await c.check_sudo(m.from_user.id):
+		return
+	chat_id = m.chat.id
+	chat_name = m.chat.username
+	user_id = m.from_user.id
+	mention = m.from_user.mention
+	try:
+		r = requests.get("https://api.cas.chat/check?user_id={}".format(user_id))
+	except requests.exceptions.RequestException as e:
+		print(e)
+		return False
+	except Exception:
+		return False
+	r = r.json()
+	if not r:
+		return False
+	if r["ok"]:
+		reason = "[CAS #{}](https://cas.chat/query?u={})".format(user_id,user_id)
+	else:
+		return False
+	msg = None
+	try:
+		msg = await m.reply("Gbanning...")
+	except Exception:
+		pass
+	if (
+		not await c.check_admin(chat_id,user_id)
+		and not await c.check_approved(chat_id, user_id)
+	):
+		await c.ban_chat_member(int(chat_id),user_id)
+	check = await db.find_one({'user_id': user.id})
+	await db.update_one({'user_id': user.id}, {"$set": {'reason': reason, 'until': 0}}, upsert=True)
+	async for chat in chat_db.find():
+		if chat["chat_id"] != m.chat.id:
+			try:
+				if (
+					not await c.check_admin(chat["chat_id"],user_id)
+					and not await c.check_approved(chat["chat_id"], user_id)
+				):
+					await c.ban_chat_member(chat["chat_id"],user_id)
+			except RPCError as e:
+				print("{} | {}".format(e,chat["chat_name"]))
+	log = (await tl(chat_id, "cas_log")).format(chat["chat_username"],mention,user_id,reason)
+	text = (await tl(chat_id, "cas_msg")).format(mention,reason)
+	if msg:
+		await msg.edit(text, disable_web_page_preview=True)
+	await c.send_message(chat_id=LOG_CHAT, text=log)
+	return True
 
 async def gban_task(c,m):
 	db = c.db["gban_list"]
