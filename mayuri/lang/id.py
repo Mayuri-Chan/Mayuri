@@ -30,8 +30,6 @@ Memperbaharui daftar admin.
 Menambahkan user ke whitelist.
 > `/unapprove`
 Menghapus user dari whitelist.
-> `/zombies`
-Mencari dan membersihkan akun terhapus.
 	""",
 	'admin_refreshed': "Cache admin berhasil direfresh.",
 	'admin_approved_list': "Daftar user yang diwhitelist di grup ini:",
@@ -279,10 +277,7 @@ Untuk menampilkan daftar perintah yang dapat di non-aktifkan
 	'infouser_duration': "\nDurasi: {}",
 	'infouser_is_channel': "Tolong reply ke pengguna bukan channel!",
 	'cas_log': "#ANTI_SPAM\nANTI_SPAM Global Ban Baru.\nChat: @{}\nPengguna: {}\nID Pengguna: `{}`\nAlasan: {}",
-	'sw_msg': "User {} telah di ban secara global\nAlasan: {}\n\nPowered by: SpamWatch API",
-	'sw_log': "#ANTI_SPAM\nANTI_SPAM Global Ban Baru.\nChat: @{}\nPengguna: {}\nID Pengguna: `{}`\nAlasan: {}",
 	'cas_msg': "User {} telah di ban secara global\nAlasan: {}\n\nPowered by: Combot Anti Spam API",
-	'cas_sw_welcome_log': "User {} telah di ban secara global\nAlasan: {}\n\nPowered by: Combot Anti Spam API & SpamWatch API",
 	'welcome_set': "Pesan Sambutan berhasil diatur",
 	'not_forum': "Grup ini bukan forum. silahkan hidupkan option topic terlebih dahulu!",
 	'welcome_not_set': "Pesan sambutan belum diatur di grup ini!",
