@@ -1,10 +1,7 @@
 from mayuri import PREFIX
-from mayuri.db import filters as sql
 from mayuri.mayuri import Mayuri
-from mayuri.utils.filters import admin_only, disable
-from mayuri.utils.lang import tl
-from mayuri.utils.misc import check_channel
-from mayuri.utils.string import split_quotes, parse_button, build_keyboard
+from mayuri.util.filters import admin_only, disable
+from mayuri.util.string import split_quotes, parse_button, build_keyboard
 from pyrogram import filters
 from pyrogram.types import InlineKeyboardMarkup
 
@@ -13,6 +10,7 @@ __HELP__ = "filters_help"
 
 @Mayuri.on_message(filters.command("filter", PREFIX) & admin_only)
 async def addfilter(c,m):
+	db = c.db["filters"]
 	chat_id = m.chat.id
 	reply = m.reply_to_message
 	text = m.text
@@ -25,7 +23,7 @@ async def addfilter(c,m):
 	extracted = split_quotes(name)
 	if reply:
 		if len(extracted) < 1:
-			return await m.reply_text(await tl(chat_id, 'give_filter_name'))
+			return await m.reply_text(await c.tl(chat_id, 'give_filter_name'))
 		name = (extracted[0]).lower()
 		if reply.sticker:
 			filt_type = 3
@@ -59,19 +57,20 @@ async def addfilter(c,m):
 				return await m.reply_text()
 	else:
 		if len(extracted) <= 1:
-			return await m.reply_text(await tl(chat_id, 'give_filter_text'))
+			return await m.reply_text(await c.tl(chat_id, 'give_filter_text'))
 		filt_type = 1
 		name = extracted[0]
 		value = extracted[1]
 		text, _ = parse_button(value)
 		text = text.strip()
 		if not text:
-			return await m.reply_text(await tl(chat_id, 'give_filter_text'))
-	sql.add_to_filter(chat_id,name,value,document,filt_type,document_type)
-	await m.reply_text((await tl(chat_id, 'filter_added')).format(name,m.chat.title),disable_web_page_preview=True)
+			return await m.reply_text(await c.tl(chat_id, 'give_filter_text'))
+	await db.update_one({'chat_id': chat_id, 'name': name},{"$set": {'value': value, 'type': filt_type, 'media': document, 'media_type': document_type}}, upsert=True)
+	await m.reply_text((await c.tl(chat_id, 'filter_added')).format(name,m.chat.title),disable_web_page_preview=True)
 
 @Mayuri.on_message(filters.command("stop", PREFIX) & admin_only)
 async def rm_filter(c,m):
+	db = c.db["filters"]
 	chat_id = m.chat.id
 	text = m.text
 	text = text.split(None, 1)
@@ -80,30 +79,32 @@ async def rm_filter(c,m):
 		extracted = split_quotes(name)
 		if len(extracted) > 0:
 			name = extracted[0].lower()
-
-		if sql.rm_from_filter(chat_id,name):
-			await m.reply_text((await tl(chat_id, 'filter_removed')).format(name,m.chat.title),disable_web_page_preview=True)
+		check = await db.find_one({'chat_id': chat_id, 'name': name})
+		if check:
+			await db.delete_one({'chat_id': chat_id, 'name': name})
+			await m.reply_text((await c.tl(chat_id, 'filter_removed')).format(name,m.chat.title),disable_web_page_preview=True)
 		else:
-			await m.reply_text((await tl(chat_id, 'filter_not_found')).format(name),disable_web_page_preview=True)
+			await m.reply_text((await c.tl(chat_id, 'filter_not_found')).format(name),disable_web_page_preview=True)
 	else:
-		await m.reply_text(await tl(chat_id, 'what_filter_to_remove'))
+		await m.reply_text(await c.tl(chat_id, 'what_filter_to_remove'))
 
-@Mayuri.on_message(filters.group & disable("filters"))
-async def filters_list(c,m):
+@Mayuri.on_message(filters.group & filters.command("filters", PREFIX))
+@disable
+async def cmd_filters(c,m):
+	db = c.db["filters"]
 	chat_id = m.chat.id
-	list_name = sql.filter_list(chat_id)
-	text = await tl(chat_id, 'filter_list')
+	list_name = db.find({'chat_id': chat_id})
+	text = await c.tl(chat_id, 'filter_list')
 	if list_name:
-		for name in list_name:
-			text = text+" - <code>{}</code>\n".format(name.name)
+		async for filt in list_name:
+			text = text+" - <code>{}</code>\n".format(filt['name'])
 		await m.reply_text(text,disable_web_page_preview=True)
 	else:
-		await m.reply_text((await tl(chat_id, 'no_filter_found')).format(m.chat.title))
+		await m.reply_text((await c.tl(chat_id, 'no_filter_found')).format(m.chat.title))
 
 @Mayuri.on_message(filters.group, group=103)
 async def filter_watcher(c,m):
-	if await check_channel(c,m):
-		return
+	db = c.db["filters"]
 	chat_id = m.chat.id
 	if m.caption:
 		text = m.caption
@@ -111,21 +112,35 @@ async def filter_watcher(c,m):
 		text = m.text
 	if not text:
 		return
+	if m.command and (m.command[0]).lower() in ['filter', 'stop']:
+		return
 	text = text.lower()
 	text = text.split()
-	check = sql.filter_list(chat_id)
-	mention = m.from_user.mention
-	first_name = m.from_user.first_name
-	last_name = m.from_user.last_name
-	fullname = "{} {}".format(first_name,last_name)
-	user_id = m.from_user.id
-	user_name = m.from_user.username
+	check = db.find({'chat_id': chat_id})
+	if m.sender_chat:
+		chat = m.sender_chat
+		if chat.username:
+			mention = f"[{chat.title}](https://t.me/{chat.username})"
+		else:
+			mention = None
+		first_name = chat.title
+		last_name = ""
+		fullname = chat.title
+		user_id = chat.id
+		user_name = chat.username
+	else:
+		mention = m.from_user.mention
+		first_name = m.from_user.first_name
+		last_name = m.from_user.last_name
+		fullname = "{} {}".format(first_name,last_name)
+		user_id = m.from_user.id
+		user_name = m.from_user.username
 	value = ""
 	if not check:
 		return
-	for filt in check:
-		if filt.name in text:
-			value = filt.value
+	async for filt in check:
+		if filt['name'] in text:
+			value = filt['value']
 			if value:
 				text, button = parse_button(value)
 				button = build_keyboard(button)
@@ -137,25 +152,27 @@ async def filter_watcher(c,m):
 				text = ""
 				button = None
 
-			if filt.filter_type == 1:
-				await m.reply_text(text.format(
-					first_name=first_name,
-					last_name=last_name,
-					fullname=fullname,
-					user_id=user_id,
-					user_name=user_name,
-					mention=mention),
+			text.format(
+				first_name=first_name,
+				last_name=last_name,
+				fullname=fullname,
+				user_id=user_id,
+				user_name=user_name,
+				mention=mention
+			)
+			if filt['type'] == 1:
+				await m.reply_text(text,
 					reply_markup=button
 				)
-			elif filt.filter_type == 3:
-				await m.reply_sticker(filt.document)
-			elif filt.filter_type == 4:
-				if filt.document_type == 1:
-					await m.reply_audio(audio=filt.document,caption=text,reply_markup=button)
-				elif filt.document_type == 2:
-					await m.reply_document(document=filt.document,caption=text,reply_markup=button)
-				elif filt.document_type == 3:
-					await m.reply_photo(photo=filt.document,caption=text,reply_markup=button)
-				elif filt.document_type == 4:
-					await m.reply_video(video=filt.document,caption=text,reply_markup=button)
+			elif filt['type'] == 3:
+				await m.reply_sticker(filt['media'])
+			elif filt['type'] == 4:
+				if filt['media_type'] == 1:
+					await m.reply_audio(audio=filt['media'],caption=text,reply_markup=button)
+				elif filt['media_type'] == 2:
+					await m.reply_document(document=filt['media'],caption=text,reply_markup=button)
+				elif filt['media_type'] == 3:
+					await m.reply_photo(photo=filt['media'],caption=text,reply_markup=button)
+				elif filt['media_type'] == 4:
+					await m.reply_video(video=filt['media'],caption=text,reply_markup=button)
 			break

@@ -1,6 +1,25 @@
+__pycache__/
+
+# environment file
+config.toml
+!sample_config.toml
+
+# Build folder
+dist/
+
+# file
+.DS_Store
+*.pyc
+*.log
 *.session
-mayuri/config.py
-mayuri/__pycache__
-mayuri/plugins/__pycache__
-mayuri/utils/__pycache__
-mayuri/db/__pycache__
+*.session-journal
+*.session-wal
+downloads/
+
+# IDE specific files
+.idea/
+.vscode/
+*.sw*
+
+# Generated files
+CHANGELOG.md

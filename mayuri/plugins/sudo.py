@@ -1,13 +1,12 @@
-from mayuri import OWNER, PREFIX
-from mayuri.db import sudo as sql
+from mayuri import PREFIX
 from mayuri.mayuri import Mayuri
-from mayuri.utils.filters import owner_only
-from mayuri.utils.lang import tl
+from mayuri.util.filters import owner_only
 from pyrogram import filters
 from pyrogram.errors import RPCError
 
 @Mayuri.on_message(filters.command("addsudo", PREFIX) & owner_only)
 async def add_sudo(c,m):
+	db = c.db["bot_settings"]
 	chat_id = m.chat.id
 	if m.reply_to_message:
 		user_id = m.reply_to_message.from_user.id
@@ -19,14 +18,18 @@ async def add_sudo(c,m):
 			user_id = user.id
 			mention = user.mention
 		except RPCError:
-			await m.reply_text(await tl(chat_id, "not_user"))
+			await m.reply_text(await c.tl(chat_id, "not_user"))
 			return
-	sql.add_to_sudo(user_id)
-	text = (await tl(chat_id, "added_to_sudo")).format(mention)
+	check = await db.find_one({'name': 'sudo_list'})
+	if check and user_id in check["list"]:
+		return await m.reply_text((await c.tl(chat_id, "user_is_sudo")).format(mention))
+	await db.update_one({'name': 'sudo_list'},{"$push": {'list': user_id}}, upsert=True)
+	text = (await c.tl(chat_id, "added_to_sudo")).format(mention)
 	await m.reply_text(text)
 
 @Mayuri.on_message(filters.command("rmsudo", PREFIX) & owner_only)
 async def rm_sudo(c,m):
+	db = c.db["bot_settings"]
 	chat_id = m.chat.id
 	if m.reply_to_message:
 		user_id = m.reply_to_message.from_user.id
@@ -38,27 +41,27 @@ async def rm_sudo(c,m):
 			user_id = user.id
 			mention = user.mention
 		except RPCError:
-			await m.reply_text(await tl(chat_id, "not_user"))
+			await m.reply_text(await c.tl(chat_id, "not_user"))
 			return
-
-	sql.rm_from_sudo(user_id)
-	text = (await tl(chat_id, "removed_to_sudo")).format(mention)
+	check = await db.find_one({'name': 'sudo_list'})
+	if not check:
+		return await m.reply_text((await c.tl(chat_id, "user_is_not_sudo")).format(mention))
+	if user_id not in check["list"]:
+		return await m.reply_text((await c.tl(chat_id, "user_is_not_sudo")).format(mention))
+	await db.update_one({'name': 'sudo_list'},{"$pull": {'list': user_id}})
+	text = (await c.tl(chat_id, "removed_from_sudo")).format(mention)
 	await m.reply_text(text)
 
 @Mayuri.on_message(filters.command("sudols", PREFIX) & owner_only)
 async def sudols(c,m):
+	db = c.db["bot_settings"]
 	chat_id = m.chat.id
-	text = await tl(chat_id, "sudo_ls")
-	sudo_list = sql.sudo_list()
-	for sudo in sudo_list:
-		user = await c.get_users(sudo.user_id)
+	text = await c.tl(chat_id, "sudo_ls")
+	check = await db.find_one({'name': 'sudo_list'})
+	if not check:
+		return await m.reply_text((await c.tl(chat_id, "no_sudo")))
+	for user_id in check["list"]:
+		user = await c.get_users(user_id)
 		mention = user.mention
 		text += "\n - {}".format(mention)
 	await m.reply_text(text)
-
-async def check_sudo(user_id):
-	user_id = user_id
-	check = sql.check_sudo(user_id)
-	if check or user_id == OWNER:
-		return True
-	return False

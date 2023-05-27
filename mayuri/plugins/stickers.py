@@ -1,18 +1,17 @@
 import cv2
 import os
-from mayuri import LOG_STICKER
+import re
+from mayuri import PREFIX
 from mayuri.mayuri import Mayuri
-from mayuri.utils.filters import disable
-from mayuri.utils.lang import tl
-from mayuri.utils.misc import EMOJI_PATTERN, http
-from pyrogram import enums
+from mayuri.util.filters import disable
+from mayuri.util.misc import EMOJI_PATTERN, http
+from pyrogram import enums, filters
 from pyrogram.errors import PeerIdInvalid, StickersetInvalid
 from pyrogram.raw.functions.channels import GetMessages as GetChannelMessages
 from pyrogram.raw.functions.messages import GetMessages as GetUserMessages, GetStickerSet, SendMedia
 from pyrogram.raw.functions.stickers import AddStickerToSet, CreateStickerSet, RemoveStickerFromSet
 from pyrogram.raw.types import (
 	DocumentAttributeFilename,
-	DocumentAttributeSticker,
 	InputDocument,
 	InputMediaUploadedDocument,
 	InputMessageID,
@@ -24,16 +23,18 @@ from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 __PLUGIN__ = "stickers"
 __HELP__ = "stickers_help"
 
-@Mayuri.on_message(disable("stickerid"))
-async def stickerid(c,m):
+@Mayuri.on_message(filters.command("stickerid", PREFIX))
+@disable
+async def cmd_stickerid(c,m):
 	chat_id = m.chat.id
 	if m.reply_to_message and m.reply_to_message.sticker:
-		await m.reply_text((await tl(chat_id, "your_stickerid")).format(m.reply_to_message.sticker.file_id))
+		await m.reply_text((await c.tl(chat_id, "your_stickerid")).format(m.reply_to_message.sticker.file_id))
 	else:
-		await m.reply_text(await tl(chat_id, "must_reply_to_sticker"))
+		await m.reply_text(await c.tl(chat_id, "must_reply_to_sticker"))
 
-@Mayuri.on_message(disable("getsticker"))
-async def getsticker(c,m):
+@Mayuri.on_message(filters.command("getsticker", PREFIX))
+@disable
+async def cmd_getsticker(c,m):
 	chat_id = m.chat.id
 	animated = False
 	videos = False
@@ -43,25 +44,32 @@ async def getsticker(c,m):
 		videos = m.reply_to_message.sticker.is_video
 		filename = "images/"
 		filename += "sticker.tgs" if animated else ("sticker.webm" if videos else "sticker.png")
-		await m.reply_text(await tl(chat_id, "use_whisely"))
+		await m.reply_text(await c.tl(chat_id, "use_whisely"))
 		await c.download_media(file, file_name=filename)
 		filename = "mayuri/" + filename
+		thread_id = None
+		if m.message_thread_id:
+			thread_id = m.message_thread_id
 		if animated:
-			await m.reply_text(await tl(chat_id, "animated_not_supported"))
+			await m.reply_text(await c.tl(chat_id, "animated_not_supported"))
 		elif videos:
+			await c.send_chat_action(m.chat.id, enums.ChatAction.UPLOAD_VIDEO, message_thread_id=thread_id)
 			await m.reply_video(video=open(filename, 'rb'))
 			await m.reply_document(document=open(filename, 'rb'), force_document=True)
 		else:
+			await c.send_chat_action(m.chat.id, enums.ChatAction.UPLOAD_PHOTO, message_thread_id=thread_id)
 			await m.reply_photo(photo=open(filename, 'rb'))
+			await c.send_chat_action(m.chat.id, enums.ChatAction.UPLOAD_DOCUMENT, message_thread_id=thread_id)
 			await m.reply_document(document=open(filename, 'rb'), force_document=True)
 		os.remove(filename)
 	else:
-		await m.reply_text(await tl(chat_id, "must_reply_to_sticker"))
+		await m.reply_text(await c.tl(chat_id, "must_reply_to_sticker"))
 
-@Mayuri.on_message(disable("kang"))
-async def kang_sticker(c, m):
+@Mayuri.on_message(filters.command("kang", PREFIX))
+@disable
+async def cmd_kang(c, m):
 	chat_id = m.chat.id
-	prog_msg = await m.reply_text(await tl(chat_id, "processing"))
+	prog_msg = await m.reply_text(await c.tl(chat_id, "processing"))
 	bot_username = c.me.username
 	sticker_emoji = "🤔"
 	packnum = 0
@@ -86,18 +94,20 @@ async def kang_sticker(c, m):
 				videos = True
 		elif reply.sticker:
 			if not reply.sticker.file_name:
-				return await prog_msg.edit_text(await tl(chat_id, "cannot_kang"))
+				return await prog_msg.edit_text(await c.tl(chat_id, "cannot_kang"))
 			if reply.sticker.emoji:
 				sticker_emoji = reply.sticker.emoji
 			animated = reply.sticker.is_animated
+		max_stickers = 50 if animated else (50 if videos else 120)
+		while not packname_found:
 			videos = reply.sticker.is_video
 			if not reply.sticker.file_name.endswith(".tgs") and not reply.sticker.file_name.endswith(".webm"):
 				resize = True
 		else:
-			return await prog_msg.edit_text(await tl(chat_id, "cannot_kang"))
+			return await prog_msg.edit_text(await c.tl(chat_id, "cannot_kang"))
 		pack_prefix = "anim" if animated else ("vid" if videos else "c")
 		packname = f"{pack_prefix}{m.from_user.id}_by_{bot_username}"
-		command = m.text.split(None, 1)
+		command = m.text.split()
 		if len(command) > 1:
 			if command[1].isdigit() and int(command[1]) > 0:
 				# provide pack number to kang in desired pack
@@ -176,7 +186,7 @@ async def kang_sticker(c, m):
 		file = await c.save_file(filename)
 		media = await c.invoke(
 			SendMedia(
-				peer=(await c.resolve_peer(LOG_STICKER)),
+				peer=(await c.resolve_peer(c.config['sticker']['LOG_STICKER'])),
 				media=InputMediaUploadedDocument(
 					file=file,
 					mime_type=c.guess_mime_type(filename),
@@ -202,7 +212,7 @@ async def kang_sticker(c, m):
 				)
 			)
 		else:
-			await prog_msg.edit_text(await tl(chat_id, "creating_pack"))
+			await prog_msg.edit_text(await c.tl(chat_id, "creating_pack"))
 			u_name = m.from_user.username
 			if u_name:
 				u_name = f"@{u_name}"
@@ -238,7 +248,7 @@ async def kang_sticker(c, m):
 				)
 			except PeerIdInvalid:
 				return await prog_msg.edit_text(
-					await tl(chat_id, "cannot_create_pack"),
+					await c.tl(chat_id, "cannot_create_pack"),
 					reply_markup=InlineKeyboardMarkup(
 						[
 							[
@@ -256,13 +266,13 @@ async def kang_sticker(c, m):
 			[
 				[
 					InlineKeyboardButton(
-						await tl(chat_id, "show_pack"),
+						await c.tl(chat_id, "show_pack"),
 						url=f"t.me/addstickers/{packname}",
 					)
 				]
 			]
 		)
-		kanged_success_msg = await tl(chat_id, "sticker_kanged")
+		kanged_success_msg = await c.tl(chat_id, "sticker_kanged")
 		await prog_msg.edit_text(
 			kanged_success_msg.format(sticker_emoji=sticker_emoji), reply_markup=markup
 		)
@@ -273,7 +283,7 @@ async def kang_sticker(c, m):
 			pass
 
 def resize_image(filename: str) -> str:
-	im = cv2.imread(filename)
+	im = cv2.imread(filename,-1)
 	maxsize = 512
 	width = int(im.shape[1])
 	height = int(im.shape[0])
@@ -289,25 +299,24 @@ def resize_image(filename: str) -> str:
 		os.remove(filename)
 	return png_image
 
-@Mayuri.on_message(disable("delsticker"))
-async def remove_sticker(c, m):
+@Mayuri.on_message(filters.command("delsticker", PREFIX))
+@disable
+async def cmd_delsticker(c, m):
 	chat_id = m.chat.id
 	user_id = m.from_user.id
 	bot_username = c.me.username
-	prog_msg = await m.reply_text(await tl(chat_id, "processing"))
+	prog_msg = await m.reply_text(await c.tl(chat_id, "processing"))
 	bot_username = c.me.username
 	reply = m.reply_to_message
-	user = await c.resolve_peer(m.from_user.username or m.from_user.id)
-	filename = ""
 	if reply and reply.sticker:
 		packname = reply.sticker.set_name
 		r = r"(c)([0-9]{})(_by_)({})".format("{1,}",bot_username)
 		res = re.search(r, packname)
 		if not res:
-			return await prog_msg.edit(await tl(chat_id, "stickerpackinvalid"))
+			return await prog_msg.edit(await c.tl(chat_id, "stickerpackinvalid"))
 		else:
 			if not int(res.group(2)) == int(user_id):
-				return await prog_msg.edit(await tl(chat_id, "notyourstickerpack"))
+				return await prog_msg.edit(await c.tl(chat_id, "notyourstickerpack"))
 		if m.chat.type == enums.ChatType.PRIVATE:
 			media = await c.invoke(
 				GetUserMessages(
@@ -322,10 +331,6 @@ async def remove_sticker(c, m):
 				)
 			)
 		stkr = media.messages[0].media.document
-		sticker_emoji = None
-		for attr in stkr.attributes:
-			if isinstance(attr, DocumentAttributeSticker) and hasattr(attr, "alt"):
-				sticker_emoji = attr.alt
 		try:
 				await c.invoke(
 					RemoveStickerFromSet(
@@ -338,17 +343,17 @@ async def remove_sticker(c, m):
 				)
 		except Exception as e:
 			print(e)
-			return await prog_msg.edit(await tl(chat_id, "stickerinvalid"))
+			return await prog_msg.edit(await c.tl(chat_id, "stickerinvalid"))
 
 		markup = InlineKeyboardMarkup(
 			[
 				[
 					InlineKeyboardButton(
-						await tl(chat_id, "show_pack"),
+						await c.tl(chat_id, "show_pack"),
 						url=f"t.me/addstickers/{packname}",
 					)
 				]
 			]
 		)
-		return await prog_msg.edit((await tl(chat_id, "stickerdeleted")), reply_markup=markup)
-	await prog_msg.edit((await tl(chat_id, "notreplytosticker")))
+		return await prog_msg.edit((await c.tl(chat_id, "stickerdeleted")), reply_markup=markup)
+	await prog_msg.edit((await c.tl(chat_id, "notreplytosticker")))

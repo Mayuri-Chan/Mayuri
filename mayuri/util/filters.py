@@ -1,24 +1,25 @@
 import asyncio
 
-from mayuri import DISABLEABLE, OWNER, PREFIX
-from mayuri.db import admin as admin_db, disable as disable_db, sudo as sudo_db
+from functools import wraps
+from mayuri import DISABLEABLE, PREFIX
 from pyrogram import enums, filters
 from pyrogram.errors import FloodWait
 
-async def owner_check(_, __, m):
+async def owner_check(_, c, m):
 	if m.sender_chat:
 		return False
 	user_id = m.from_user.id
-	if user_id == OWNER:
+	if user_id == c.config['bot']['OWNER']:
 		return True
 	return False
 
-async def sudo_check(_, __, m):
+async def sudo_check(_, c, m):
 	if m.sender_chat:
 		return False
 	user_id = m.from_user.id
-	check = sudo_db.check_sudo(user_id)
-	owner = await owner_check(_, __, m)
+	db = c.db["sudo_list"]
+	check = await db.find_one({'user_id': user_id})
+	owner = await owner_check(_, c, m)
 	if check or owner:
 		return True
 	return False
@@ -40,30 +41,35 @@ async def admin_check(_, c, m):
 		return False
 	chat_id = m.chat.id
 	user_id = m.from_user.id
-	if admin_db.check_admin(chat_id,user_id):
+	db = c.db["admin_list"]
+	check = await db.find_one({"chat_id": chat_id})
+	if check and user_id in check["list"]:
 		return True
 	return False
 
-def disable(cmd):
+def disable(func):
+	wraps(func)
+	name = func.__name__
+	cmd = name[4:]
 	if cmd not in DISABLEABLE:
 		DISABLEABLE.append(cmd)
 
-	async def decorator(_, c, m):
+	async def decorator(c, m):
 		if not m.text:
 			return False
 		text = (m.text.split(None, 1))[0]
 		text = text.replace("@{}".format(c.me.username), '')
-		is_disabled = False
 		if text.startswith(tuple(PREFIX)) and text[1:] == cmd:
 			if m.chat.type == enums.ChatType.PRIVATE:
-				return True
-			if await admin_check(_, c, m):
-				return True
-			is_disabled = disable_db.check_disabled(m.chat.id, cmd)
-			if not is_disabled:
-				return True
-		return False
-	return filters.create(decorator)
+				return await func(c,m)
+			if await admin_check(None, c, m):
+				return await func(c,m)
+			db = c.db["chat_settings"]
+			disabled = await db.find_one({"chat_id": m.chat.id})
+			if disabled and "disabled_list" in disabled and cmd in disabled['disabled_list']:
+				return
+			await func(c,m)
+	return decorator
 
 
 owner_only = filters.create(owner_check)

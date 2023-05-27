@@ -1,19 +1,14 @@
-import asyncio
 import os
 import random
 import re
 import string
 
 from datetime import datetime
-from mayuri import PREFIX, USE_OCR
-from mayuri.db import blacklist as sql
+from mayuri import PREFIX
 from mayuri.mayuri import Mayuri
-from mayuri.plugins.admin import check_admin
-from mayuri.utils.filters import admin_only, disable
-from mayuri.utils.lang import tl
-from mayuri.utils.misc import check_approve
-from mayuri.utils.string import split_quotes
-from mayuri.utils.time import create_time, tl_time
+from mayuri.util.filters import admin_only, disable
+from mayuri.util.string import split_quotes
+from mayuri.util.time import create_time, tl_time
 from pyrogram import filters
 from pyrogram.types import ChatPermissions
 from unidecode import unidecode
@@ -23,6 +18,7 @@ __HELP__ = "blacklist_help"
 
 @Mayuri.on_message(filters.command("addbl", PREFIX) & admin_only)
 async def addbl(c,m):
+	db = c.db["blacklist"]
 	chat_id = m.chat.id
 	mode_list = {'delete': 0,'mute': 1, 'kick': 2,'ban': 3}
 	text = m.text
@@ -54,17 +50,17 @@ async def addbl(c,m):
 		duration = ""
 
 	mode = mode_list[mode_raw]
-
-	sql.add_to_blacklist(chat_id,trigger,mode,reason,duration)
-	text = (await tl(chat_id, 'blacklist_added')).format(trigger,mode_raw)
+	await db.update_one({'chat_id': chat_id, 'trigger': trigger},{"$set": {'mode': mode, 'duration': duration, 'reason': reason}}, upsert=True)
+	text = (await c.tl(chat_id, 'blacklist_added')).format(trigger,mode_raw)
 	if duration:
-		text = text+(await tl(chat_id, 'blacklist_duration')).format(duration)
+		text = text+(await c.tl(chat_id, 'blacklist_duration')).format(duration)
 	if reason:
-		text = text+(await tl(chat_id, 'blacklist_reason')).format(reason)
+		text = text+(await c.tl(chat_id, 'blacklist_reason')).format(reason)
 	await m.reply_text(text,disable_web_page_preview=True)
 
 @Mayuri.on_message(filters.command("rmbl", PREFIX) & admin_only)
 async def rm_bl(c,m):
+	db = c.db["blacklist"]
 	chat_id = m.chat.id
 	text = m.text
 	text = text.split(None, 1)
@@ -74,17 +70,19 @@ async def rm_bl(c,m):
 		if len(extracted) > 0:
 			trigger = extracted[0].lower()
 
-		if sql.rm_from_blacklist(chat_id,trigger):
-			await m.reply_text((await tl(chat_id, 'blacklist_deleted')).format(trigger),disable_web_page_preview=True)
-		else:
-			await m.reply_text((await tl(chat_id, 'cannot_remove_blacklist')).format(trigger),disable_web_page_preview=True)
-	else:
-		await m.reply_text(await tl(chat_id, 'what_blacklist_to_remove'))
+		check = await db.find_one({'chat_id': chat_id, 'trigger': trigger})
+		if check:
+			await db.delete_one({'chat_id': chat_id, 'trigger': trigger})
+			return await m.reply_text((await c.tl(chat_id, 'blacklist_deleted')).format(trigger),disable_web_page_preview=True)
+		return await m.reply_text((await c.tl(chat_id, 'blacklist_not_found')).format(trigger),disable_web_page_preview=True)
+	await m.reply_text(await c.tl(chat_id, 'what_blacklist_to_remove'))
 
-@Mayuri.on_message(filters.group & disable("blacklist"))
-async def blacklist_list(c,m):
+@Mayuri.on_message(filters.group & filters.command("blacklist", PREFIX))
+@disable
+async def cmd_blacklist(c,m):
+	db = c.db["blacklist"]
 	chat_id = m.chat.id
-	list_trigger = sql.blacklist_list(chat_id)
+	list_trigger = db.find({'chat_id': chat_id})
 	delete = []
 	mute = []
 	kick = []
@@ -92,18 +90,18 @@ async def blacklist_list(c,m):
 	mute_duration = []
 	ban_duration = []
 	if list_trigger:
-		for trigger in list_trigger:
-			if trigger.mode == 0:
-				delete.append(trigger.trigger)
-			elif trigger.mode == 1:
-				mute.append(trigger.trigger)
-				mute_duration.append(trigger.duration)
-			elif trigger.mode == 2:
-				kick.append(trigger.trigger)
-			elif trigger.mode == 3:
-				ban.append(trigger.trigger)
-				ban_duration.append(trigger.duration)
-		text = await tl(chat_id, 'blacklist_list')
+		async for trigger in list_trigger:
+			if trigger['mode'] == 0:
+				delete.append(trigger['trigger'])
+			elif trigger['mode'] == 1:
+				mute.append(trigger['trigger'])
+				mute_duration.append(trigger['duration'])
+			elif trigger['mode'] == 2:
+				kick.append(trigger['trigger'])
+			elif trigger['mode'] == 3:
+				ban.append(trigger['trigger'])
+				ban_duration.append(trigger['duration'])
+		text = await c.tl(chat_id, 'blacklist_list')
 		if len(delete) > 0:
 			text = text+"\nDelete :\n"
 			for x in delete:
@@ -131,9 +129,10 @@ async def blacklist_list(c,m):
 					text = text+" - <code>{}</code>\n".format(x)
 				i += 1
 		return await m.reply_text(text,disable_web_page_preview=True)
-	await m.reply_text(await tl(chat_id, 'no_blacklist'))
+	await m.reply_text(await c.tl(chat_id, 'no_blacklist'))
 
 async def blacklist_task(c,m):
+	db = c.db["blacklist"]
 	chat_id = m.chat.id
 	user_id = m.from_user.id
 	mention = m.from_user.mention
@@ -155,7 +154,7 @@ async def blacklist_task(c,m):
 			if m.sticker.is_animated or m.sticker.is_video:
 				return
 			target = "images/bl/{}.webp"
-		if USE_OCR:
+		if c.config['blacklist']['USE_OCR']:
 			import cv2
 			import pytesseract
 			file_name = ''.join(random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for i in range(10))
@@ -172,38 +171,38 @@ async def blacklist_task(c,m):
 		return
 	data_list = []
 	mode_list = []
-	check = sql.blacklist_list(chat_id)
+	check = db.find({'chat_id': chat_id})
 	if not check:
 		return
 
-	for trigger in check:
+	async for trigger in check:
 		if text:
-			ch = re.search(trigger.trigger.replace('"',''),text)
+			ch = re.search(trigger['trigger'].replace('"',''),text)
 		if text2:
-			ch2 = re.search(trigger.trigger.replace('"',''),text2)
+			ch2 = re.search(trigger['trigger'].replace('"',''),text2)
 		if ch or ch2:
 			data = {
-				'trigger': trigger.trigger,
-				'mode': trigger.mode,
-				'reason': trigger.reason,
-				'duration': trigger.duration
+				'trigger': trigger['trigger'],
+				'mode': trigger['mode'],
+				'reason': trigger['reason'],
+				'duration': trigger['duration']
 			}
-			if trigger.mode == 0:
+			if trigger['mode'] == 0:
 				data_list.append(data)
-				if trigger.mode not in mode_list:
-					mode_list.append(trigger.mode)
-			elif trigger.mode == 1:
+				if trigger['mode'] not in mode_list:
+					mode_list.append(trigger['mode'])
+			elif trigger['mode'] == 1:
 				data_list.append(data)
-				if trigger.mode not in mode_list:
-					mode_list.append(trigger.mode)
-			elif trigger.mode == 2:
+				if trigger['mode'] not in mode_list:
+					mode_list.append(trigger['mode'])
+			elif trigger['mode'] == 2:
 				data_list.append(data)
-				if trigger.mode not in mode_list:
-					mode_list.append(trigger.mode)
-			elif trigger.mode == 3:
+				if trigger['mode'] not in mode_list:
+					mode_list.append(trigger['mode'])
+			elif trigger['mode'] == 3:
 				data_list.append(data)
-				if trigger.mode not in mode_list:
-					mode_list.append(trigger.mode)
+				if trigger['mode'] not in mode_list:
+					mode_list.append(trigger['mode'])
 
 	mode_list.sort()
 	curr_duration = 0
@@ -251,41 +250,41 @@ async def blacklist_task(c,m):
 		await m.delete()
 	if mode == 1:
 		await m.delete()
-		text = await tl(chat_id, 'muted')
+		text = await c.tl(chat_id, 'muted')
 		if duration_raw:
 			await c.restrict_chat_member(chat_id, user_id, ChatPermissions(), datetime.fromtimestamp(duration))
-			text += (await tl(chat_id, 'blacklist_for')).format(tl_time(duration_raw))
+			text += (await c.tl(chat_id, 'blacklist_for')).format(tl_time(duration_raw))
 		else:
 			await c.restrict_chat_member(chat_id, user_id, ChatPermissions())
-		text += (await tl(chat_id, 'user_and_reason')).format(mention)
+		text += (await c.tl(chat_id, 'user_and_reason')).format(mention)
 		if reason:
 			text += "<code>{}</code>".format(reason)
 		else:
-			text += (await tl(chat_id, 'blacklist_said')).format(trigger)
+			text += (await c.tl(chat_id, 'blacklist_said')).format(trigger)
 		return await m.reply_text(text,disable_web_page_preview=True)
 	if mode == 2:
 		await m.delete()
-		text = await tl(chat_id, 'kicked')
+		text = await c.tl(chat_id, 'kicked')
 		await c.ban_chat_member(chat_id,user_id)
 		await c.unban_chat_member(chat_id,user_id)
 		if reason:
 			text += "<code>{}</code>".format(reason)
 		else:
-			text += (await tl(chat_id, 'blacklist_said')).format(trigger)
+			text += (await c.tl(chat_id, 'blacklist_said')).format(trigger)
 		return await m.reply_text(text,disable_web_page_preview=True)
 	if mode == 3:
 		await m.delete()
-		text = await tl(chat_id, 'banned')
+		text = await c.tl(chat_id, 'banned')
 		if duration_raw:
 			await c.ban_chat_member(chat_id, user_id, datetime.fromtimestamp(duration))
-			text += (await tl(chat_id, 'blacklist_for')).format(tl_time(duration_raw))
+			text += (await c.tl(chat_id, 'blacklist_for')).format(tl_time(duration_raw))
 		else:
 			await c.ban_chat_member(chat_id, user_id)
-		text += (await tl(chat_id, 'user_and_reason')).format(mention)
+		text += (await c.tl(chat_id, 'user_and_reason')).format(mention)
 		if reason:
 			text += "<code>{}</code>".format(reason)
 		else:
-			text += (await tl(chat_id, 'blacklist_said')).format(trigger)
+			text += (await c.tl(chat_id, 'blacklist_said')).format(trigger)
 		await m.reply_text(text,disable_web_page_preview=True)
 
 @Mayuri.on_message(filters.group, group=102)
@@ -294,6 +293,6 @@ async def bl(c,m):
 		return
 	chat_id = m.chat.id
 	user_id = m.from_user.id
-	if await check_admin(chat_id,user_id) or await check_approve(chat_id, user_id):
+	if await c.check_admin(chat_id,user_id) or await c.check_approved(chat_id, user_id):
 		return
-	asyncio.create_task(blacklist_task(c,m))
+	await c.loop.create_task(blacklist_task(c,m))

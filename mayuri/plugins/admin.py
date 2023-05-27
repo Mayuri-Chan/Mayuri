@@ -1,53 +1,80 @@
 import asyncio
-import time
 
 from mayuri import PREFIX
-from mayuri.db import admin as sql, approve as asql
 from mayuri.mayuri import Mayuri
-from mayuri.utils.filters import admin_only
-from mayuri.utils.lang import tl
+from mayuri.util.filters import admin_only, disable, sudo_only
 from pyrogram import enums, filters
 from pyrogram.errors import FloodWait, RPCError
 
 __PLUGIN__ = "admin"
 __HELP__ = "admin_help"
 
-async def check_admin(chat_id, user_id):
-	data = sql.check_admin(str(chat_id),user_id)
-	if data:
-		return True
-	return False
-
-@Mayuri.on_message(filters.command("admincache", PREFIX) & admin_only)
+@Mayuri.on_message(filters.command("admincache", PREFIX) & (admin_only | sudo_only))
 async def admincache(c,m):
 	chat_id = m.chat.id
-	r = await m.reply_text(await tl(chat_id, "refreshing_admin"))
-	current_time = int(time.time())
-	sql.remove_admin_list(chat_id)
+	db = c.db["admin_list"]
+	r = await m.reply_text(await c.tl(chat_id, "refreshing_admin"))
+	check = await db.find_one({'chat_id': chat_id})
+	admin_list = []
 	try:
 		all_admin = c.get_chat_members(chat_id, filter=enums.ChatMembersFilter.ADMINISTRATORS)
 	except FloodWait as e:
 		await asyncio.sleep(e.value)
 	async for admin in all_admin:
-		await sql.add_admin_to_list(chat_id,admin.user.id,admin.user.username)
-	sql.update_last_sync(chat_id,current_time)
-	await r.edit(await tl(chat_id, "admin_refreshed"))
+		admin_list.append(admin.user.id)
+	if check:
+		for user_id in check["list"]:
+			if user_id not in admin_list:
+				await db.update_one({'chat_id': chat_id},{"$pull": {'list': user_id}})
+	second_loop = False
+	for user_id in admin_list:
+		if check or second_loop:
+			if second_loop:
+				check = await db.find_one({'chat_id': chat_id})
+			if user_id not in check["list"]:
+				await db.update_one({'chat_id': chat_id},{"$push": {'list': user_id}})
+		else:
+			await db.update_one({'chat_id': chat_id},{"$push": {'list': user_id}}, upsert=True)
+			second_loop = True
+	await r.edit(await c.tl(chat_id, "admin_refreshed"))
+
+@Mayuri.on_message(filters.command("adminlist", PREFIX) & filters.group)
+@disable
+async def cmd_adminlist(c,m):
+	db = c.db["admin_list"]
+	chat_id = m.chat.id
+	text = await c.tl(chat_id, "admin_list_text")
+	check = await db.find_one({'chat_id': chat_id})
+	if not check:
+		await admincache(c,m)
+	for user_id in check["list"]:
+		user = await c.get_chat_member(chat_id,user_id)
+		if user.status == enums.ChatMemberStatus.OWNER:
+			text = text+"\n • 👑 "+user.user.mention
+		else:
+			text = text+"\n• "+user.user.mention
+
+	await m.reply_text(text)
 
 @Mayuri.on_message(filters.command("approvels", PREFIX) & admin_only)
 async def approvels(c,m):
+	db = c.db["chat_settings"]
 	chat_id = m.chat.id
-	text = await tl(chat_id, 'admin_approved_list')
-	approve_list = asql.approve_list(chat_id)
-	if approve_list:
-		for approved in approve_list:
-			user = await c.get_users(approved.user_id)
-			mention = user.mention
-			text += "\n - {}".format(mention)
-		return await m.reply_text(text)
-	m.reply_text(await tl(chat_id, 'admin_no_approved'))
+	text = await c.tl(chat_id, 'admin_approved_list')
+	check = await db.find_one({'chat_id': chat_id})
+	if not check:
+		return m.reply_text(await c.tl(chat_id, 'admin_no_approved'))
+	if 'approved' not in check or len(check["approved"]) == 0:
+		return m.reply_text(await c.tl(chat_id, 'admin_no_approved'))
+	for user_id in check["approved"]:
+		user = await c.get_users(user_id)
+		mention = user.mention
+		text += "\n - {}".format(mention)
+	await m.reply_text(text)
 
 @Mayuri.on_message(filters.command("approve", PREFIX) & admin_only)
 async def approve(c,m):
+	db = c.db["chat_settings"]
 	chat_id = m.chat.id
 	if m.reply_to_message:
 		user_id = m.reply_to_message.from_user.id
@@ -59,13 +86,17 @@ async def approve(c,m):
 			user_id = user.id
 			mention = user.mention
 		except RPCError:
-			return await m.reply_text(await tl(chat_id, 'need_user_id'))
-	asql.add_to_approve(chat_id,user_id)
-	text = (await tl(chat_id, "admin_user_added_to_approve")).format(mention)
+			return await m.reply_text(await c.tl(chat_id, 'need_user_id'))
+	check = await db.find_one({'chat_id': chat_id})
+	if check and 'approved' in check and user_id in check["approved"]:
+		return m.reply_text(await c.tl(chat_id, 'user_already_approved'))
+	await db.update_one({'chat_id': chat_id},{"$push": {'approved': user_id}}, upsert=True)
+	text = (await c.tl(chat_id, "admin_user_added_to_approve")).format(mention)
 	await m.reply_text(text)
 
 @Mayuri.on_message(filters.command("unapprove", PREFIX) & admin_only)
 async def unapprove(c,m):
+	db = c.db["chat_settings"]
 	chat_id = m.chat.id
 	if m.reply_to_message:
 		user_id = m.reply_to_message.from_user.id
@@ -77,14 +108,17 @@ async def unapprove(c,m):
 			user_id = user.id
 			mention = user.mention
 		except RPCError:
-			return await m.reply_text(await tl(chat_id, 'need_user_id'))
-	asql.rm_from_approve(chat_id,user_id)
-	text = (await tl(chat_id, "admin_user_removed_to_approve")).format(mention)
-	await m.reply_text(text)
+			return await m.reply_text(await c.tl(chat_id, 'need_user_id'))
+	check = await db.find_one({'chat_id': chat_id, 'user_id': user_id})
+	if check and 'approved' in check and user_id in check["approved"]:
+		await db.update_one({'chat_id': chat_id},{"$pull": {'approved': user_id}})
+		text = (await c.tl(chat_id, "admin_user_removed_to_approve")).format(mention)
+		return await m.reply_text(text)
+	m.reply_text(await c.tl(chat_id, 'user_not_approved'))
 
 async def zombies_task(c,m):
 	chat_id = m.chat.id
-	msg = await m.reply_text(await tl(chat_id, "search_zombies"))
+	msg = await m.reply_text(await c.tl(chat_id, "search_zombies"))
 	await m.delete()
 	count = 0
 	users = []
@@ -93,17 +127,17 @@ async def zombies_task(c,m):
 	except FloodWait as e:
 		await asyncio.sleep(e.value)
 	async for member in chat_members:
-		if member.user.is_deleted and not await check_admin(chat_id, member.user.id):
+		if member.user.is_deleted and not await c.check_admin(chat_id, member.user.id):
 			count = count+1
 			users.append(member.user.id)
 
 	if count == 0:
-		await msg.edit(await tl(chat_id, "no_zombies"))
+		await msg.edit(await c.tl(chat_id, "no_zombies"))
 	else:
-		await msg.edit((await tl(chat_id, "found_zombies")).format(count))
+		await msg.edit((await c.tl(chat_id, "found_zombies")).format(count))
 		for user in users:
 			await c.ban_chat_member(chat_id,user)
-		await msg.edit((await tl(chat_id, "zombies_cleaned")).format(count))
+		await msg.edit((await c.tl(chat_id, "zombies_cleaned")).format(count))
 	await asyncio.sleep(2)
 	await msg.delete()
 

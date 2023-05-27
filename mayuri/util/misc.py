@@ -1,10 +1,6 @@
-import asyncio
 import httpx
 import re
-from mayuri.db import approve as asql
-from mayuri.utils.lang import tl
-from pyrogram import emoji, enums
-from pyrogram.errors import FloodWait
+from pyrogram import emoji
 from pyrogram.types import InlineKeyboardButton
 
 _EMOJI_REGEXP = None
@@ -19,15 +15,15 @@ class EqInlineKeyboardButton(InlineKeyboardButton):
     def __gt__(self, other):
         return self.text > other.text
 
-async def paginate_plugins(_page_n, plugin_dict, prefix, chat_id, chat=None):
+async def paginate_plugins(client, _page_n, plugin_dict, prefix, chat_id, chat=None):
     if not chat:
         plugins = sorted(
-            [EqInlineKeyboardButton(await tl(chat_id, x.__PLUGIN__),
+            [EqInlineKeyboardButton(await client.tl(chat_id, x.__PLUGIN__),
                                     callback_data="{}_plugin({})".format(prefix, x.__PLUGIN__.lower())) for x
              in plugin_dict.values()])
     else:
         plugins = sorted(
-            [EqInlineKeyboardButton(await tl(chat_id, x.__PLUGIN__),
+            [EqInlineKeyboardButton(await client.tl(chat_id, x.__PLUGIN__),
                                     callback_data="{}_plugin({},{})".format(prefix, chat, x.__PLUGIN__.lower())) for x
              in plugin_dict.values()])
 
@@ -63,25 +59,3 @@ def get_emoji_regex():
 EMOJI_PATTERN = get_emoji_regex()
 timeout = httpx.Timeout(40, pool=None)
 http = httpx.AsyncClient(http2=True, timeout=timeout)
-
-async def check_channel(c, m):
-    if m.chat.type == enums.ChatType.PRIVATE:
-        return False
-    if m.sender_chat:
-        try:
-            curr_chat = await c.get_chat(m.chat.id)
-        except FloodWait as e:
-            asyncio.sleep(e.value)
-        if m.sender_chat.id == m.chat.id: # Anonymous admin
-            return False
-        if curr_chat.linked_chat:
-            if (
-                m.sender_chat.id == curr_chat.linked_chat.id and
-                not m.forward_from
-            ): # Linked channel owner
-                return False
-        return True
-    return False
-
-async def check_approve(chat_id, user_id):
-    return asql.check_approve(chat_id,user_id)

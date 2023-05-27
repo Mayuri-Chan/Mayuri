@@ -2,14 +2,10 @@ import re
 
 from datetime import datetime
 from mayuri import PREFIX
-from mayuri.db import blpack as sql
 from mayuri.mayuri import Mayuri
-from mayuri.plugins.admin import check_admin
-from mayuri.utils.filters import admin_only, disable
-from mayuri.utils.lang import tl
-from mayuri.utils.misc import check_approve
-from mayuri.utils.string import split_quotes
-from mayuri.utils.time import create_time, tl_time
+from mayuri.util.filters import admin_only, disable
+from mayuri.util.string import split_quotes
+from mayuri.util.time import create_time, tl_time
 from pyrogram import filters
 from pyrogram.types import ChatPermissions
 
@@ -18,6 +14,7 @@ __HELP__ = "blpack_help"
 
 @Mayuri.on_message(filters.command("addblpack", PREFIX) & admin_only)
 async def addblpack(c,m):
+	db = c.db["blacklist_stickerpack"]
 	chat_id = m.chat.id
 	mode_list = {'delete': 0,'mute': 1, 'kick': 2,'ban': 3}
 	duration = ""
@@ -75,17 +72,17 @@ async def addblpack(c,m):
 		duration = ""
 
 	mode = mode_list[mode_raw]
-
-	sql.add_to_blpack(chat_id,packname,mode,reason,duration)
-	text = (await tl(chat_id, 'blpack_added')).format(packname,mode_raw)
+	await db.update_one({'chat_id': chat_id, 'packname': packname}, {"$set": {'mode': mode, 'duration': duration, 'reason': reason}}, upsert=True)
+	text = (await c.tl(chat_id, 'blpack_added')).format(packname,mode_raw)
 	if duration:
-		text = text+(await tl(chat_id, 'blacklist_duration')).format(tl_time(duration))
+		text = text+(await c.tl(chat_id, 'blacklist_duration')).format(tl_time(duration))
 	if reason:
-		text = text+(await tl(chat_id, 'blacklist_reason')).format(reason)
+		text = text+(await c.tl(chat_id, 'blacklist_reason')).format(reason)
 	await m.reply_text(text,disable_web_page_preview=True)
 
 @Mayuri.on_message(filters.command("rmblpack", PREFIX) & admin_only)
 async def rm_bl(c,m):
+	db = c.db["blacklist_stickerpack"]
 	chat_id = m.chat.id
 	text = m.text
 	text = text.split(None, 1)
@@ -96,16 +93,20 @@ async def rm_bl(c,m):
 	elif len(text) > 1:
 		packname = text[1]
 	if not packname:
-		return await m.reply_text(await tl(chat_id, 'what_blacklist_to_remove'))
-	if sql.rm_from_blpack(chat_id,packname):
-		await m.reply_text((await tl(chat_id, 'blpack_deleted')).format(packname),disable_web_page_preview=True)
+		return await m.reply_text(await c.tl(chat_id, 'what_blacklist_to_remove'))
+	check = await db.find_one({'chat_id': chat_id, 'packname': packname})
+	if check:
+		await db.delete_one({'chat_id': chat_id, 'packname': packname})
+		await m.reply_text((await c.tl(chat_id, 'blpack_deleted')).format(packname),disable_web_page_preview=True)
 	else:
-		await m.reply_text((await tl(chat_id, 'cannot_remove_blpack')).format(packname),disable_web_page_preview=True)
+		await m.reply_text((await c.tl(chat_id, 'blpack_not_found')).format(packname),disable_web_page_preview=True)
 
-@Mayuri.on_message(filters.group & disable("blpack"))
-async def blpack_list(c,m):
+@Mayuri.on_message(filters.group & filters.command("blpack", PREFIX))
+@disable
+async def cmd_blpack(c,m):
+	db = c.db["blacklist_stickerpack"]
 	chat_id = m.chat.id
-	list_bl = sql.blpack_list(chat_id)
+	list_bl = db.find({'chat_id': chat_id})
 	delete = []
 	mute = []
 	kick = []
@@ -113,18 +114,18 @@ async def blpack_list(c,m):
 	mute_duration = []
 	ban_duration = []
 	if list_bl:
-		for bl in list_bl:
-			if bl.mode == 0:
-				delete.append(bl.packname)
-			elif bl.mode == 1:
-				mute.append(bl.packname)
-				mute_duration.append(bl.duration)
-			elif bl.mode == 2:
-				kick.append(bl.packname)
-			elif bl.mode == 3:
-				ban.append(bl.packname)
-				ban_duration.append(bl.duration)
-		text = await tl(chat_id, 'blpack_list')
+		async for bl in list_bl:
+			if bl['mode'] == 0:
+				delete.append(bl['packname'])
+			elif bl['mode'] == 1:
+				mute.append(bl['packname'])
+				mute_duration.append(bl['duration'])
+			elif bl['mode'] == 2:
+				kick.append(bl['packname'])
+			elif bl['mode'] == 3:
+				ban.append(bl['packname'])
+				ban_duration.append(bl['duration'])
+		text = await c.tl(chat_id, 'blpack_list')
 		if len(delete) > 0:
 			text = text+"\nDelete :\n"
 			for x in delete:
@@ -152,64 +153,65 @@ async def blpack_list(c,m):
 					text = text+" - <code>{}</code>\n".format(x)
 				i += 1
 		return await m.reply_text(text,disable_web_page_preview=True)
-	await m.reply_text(await tl(chat_id, 'no_blpack'))
+	await m.reply_text(await c.tl(chat_id, 'no_blpack'))
 
 @Mayuri.on_message(filters.group & filters.sticker, group=104)
 async def blpack_watcher(c,m):
+	db = c.db["blacklist_stickerpack"]
 	if m.sender_chat:
 		return
 	chat_id = m.chat.id
 	user_id = m.from_user.id
-	if await check_admin(chat_id,user_id) or await check_approve(chat_id, user_id):
+	if await c.check_admin(chat_id,user_id) or await c.check_approved(chat_id, user_id):
 		return
 	mention = m.from_user.mention
 	packname = m.sticker.set_name
 	reason = ""
 	duration_raw = ""
-	check = sql.check_pack(chat_id, packname)
+	check = await db.find_one({'chat_id': chat_id, 'packname': packname})
 	if not check:
 		return
-	if check.duration:
-		duration_raw = check.duration
+	if check['duration']:
+		duration_raw = check['duration']
 		duration = create_time(duration_raw)
-	if check.reason:
-		reason = check.reason
-	mode = check.mode
+	if check['reason']:
+		reason = check['reason']
+	mode = check['mode']
 	if mode == 1:
 		await m.delete()
-		text = await tl(chat_id, 'muted')
+		text = await c.tl(chat_id, 'muted')
 		if duration_raw:
 			await c.restrict_chat_member(chat_id, user_id, ChatPermissions(), datetime.fromtimestamp(duration))
-			text += (await tl(chat_id, 'blacklist_for')).format(tl_time(duration_raw))
+			text += (await c.tl(chat_id, 'blacklist_for')).format(tl_time(duration_raw))
 		else:
 			await c.restrict_chat_member(chat_id, user_id, ChatPermissions())
-		text += (await tl(chat_id, 'user_and_reason')).format(mention)
+		text += (await c.tl(chat_id, 'user_and_reason')).format(mention)
 		if reason:
 			text += "<code>{}</code>".format(reason)
 		else:
-			text += (await tl(chat_id, 'blpack_send')).format(packname)
+			text += (await c.tl(chat_id, 'blpack_send')).format(packname)
 		return await m.reply_text(text,disable_web_page_preview=True)
 	if mode == 2:
 		await m.delete()
-		text = await tl(chat_id, 'kicked')
+		text = await c.tl(chat_id, 'kicked')
 		await c.ban_chat_member(chat_id,user_id)
 		await c.unban_chat_member(chat_id,user_id)
 		if reason:
 			text += "<code>{}</code>".format(reason)
 		else:
-			text += (await tl(chat_id, 'blpack_send')).format(packname)
+			text += (await c.tl(chat_id, 'blpack_send')).format(packname)
 		return await m.reply_text(text,disable_web_page_preview=True)
 	if mode == 3:
 		await m.delete()
-		text = await tl(chat_id, 'banned')
+		text = await c.tl(chat_id, 'banned')
 		if duration_raw:
 			await c.ban_chat_member(chat_id, user_id, datetime.fromtimestamp(duration))
-			text += (await tl(chat_id, 'blacklist_for')).format(tl_time(duration_raw))
+			text += (await c.tl(chat_id, 'blacklist_for')).format(tl_time(duration_raw))
 		else:
 			await c.ban_chat_member(chat_id, user_id)
-		text += (await tl(chat_id, 'user_and_reason')).format(mention)
+		text += (await c.tl(chat_id, 'user_and_reason')).format(mention)
 		if reason:
 			text += "<code>{}</code>".format(reason)
 		else:
-			text += (await tl(chat_id, 'bpack_send')).format(packname)
+			text += (await c.tl(chat_id, 'bpack_send')).format(packname)
 		await m.reply_text(text,disable_web_page_preview=True)
