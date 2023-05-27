@@ -1,5 +1,6 @@
 import cv2
 import os
+import random
 import re
 import string
 import time
@@ -11,7 +12,6 @@ from pyrogram import enums, filters
 from pyrogram.errors import RPCError
 from pyrogram.types import InputMediaPhoto
 from pyrogram.types import ChatPermissions, InlineKeyboardButton, InlineKeyboardMarkup
-from random import random, choice, randint, shuffle
 
 @Mayuri.on_message(filters.command("setwelcome", PREFIX) & admin_only)
 async def set_welcome(c,m):
@@ -20,6 +20,8 @@ async def set_welcome(c,m):
 	thread_id = 1
 	enable = True
 	clean_service = False
+	is_captcha = False
+	verify_text = None
 	if m.reply_to_message:
 		text = m.reply_to_message.text
 	else:
@@ -30,12 +32,14 @@ async def set_welcome(c,m):
 		enable = check['enable']
 		clean_service = check['clean_service']
 		thread_id = check['thread_id']
+		is_captcha = check['is_captcha']
+		verify_text = check['verify_text']
 		if m.chat.is_forum:
 			if (check and check['thread_id'] == 1):
 				thread_id = m.message_thread_id
 			elif not m.message_thread_id:
 				thread_id = 1
-	await db.update_one({'chat_id': chat_id}, {"$set": {'text': text, 'thread_id': thread_id, 'enable': enable, 'clean_service': clean_service}}, upsert=True)
+	await db.update_one({'chat_id': chat_id}, {"$set": {'text': text, 'thread_id': thread_id, 'enable': enable, 'clean_service': clean_service, 'is_captcha': is_captcha, 'verify_text': verify_text}}, upsert=True)
 	r_text = await c.tl(chat_id, "welcome_set")
 	await m.reply_text(r_text)
 
@@ -64,7 +68,7 @@ async def welcome(c,m):
 	check = await db.find_one({'chat_id': chat_id})
 	if not check:
 		return await m.reply_text(await c.tl(chat_id, "welcome_not_set"))
-	welc_settings = (await c.tl(chat_id, "welcome_settings")).format(check['enable'], check['clean_service'], check['thread_id'])
+	welc_settings = (await c.tl(chat_id, "welcome_settings")).format(check['enable'], check['clean_service'], check['thread_id'], check['is_captcha'], check['verify_text'])
 	if len(text) < 2:
 		if not check['text']:
 			text = await c.tl(chat_id, "default-welcome")
@@ -95,16 +99,16 @@ async def welcome(c,m):
 
 @Mayuri.on_message(filters.group, group=10)
 async def welcome_handler(c,m):
-	await welcome_msg(c,m,True)
+	await welcome_msg(c,m,False)
 
 @Mayuri.on_chat_join_request()
 async def join_request_handler(c,m):
-	await welcome_msg(c,m,False)
+	await welcome_msg(c,m,True)
 
 async def welcome_msg(c,m,is_request):
 	db = c.db["welcome_settings"]
 	chat_id = m.chat.id
-	if is_request:
+	if not is_request:
 		new_members = m.new_chat_members
 		if not new_members:
 			return
@@ -122,6 +126,17 @@ async def welcome_msg(c,m,is_request):
 			text = check['text']
 		text, button = parse_button(text)
 		button = build_keyboard(button)
+		if check['is_captcha']:
+			await c.restrict_chat_member(chat_id, new_member.id, ChatPermissions())
+			if check['verify_text']:
+				verify_text = check['verify_text']
+			else:
+				verify_text = await c.tl(chat_id, 'verif_text')
+			verify_id = ''.join(random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for i in range(10))
+			if button:
+				button.append([InlineKeyboardButton(verify_text, url=f"https://t.me/{c.me.username}?start=verify_{verify_id}")])
+			else:
+				button = [[InlineKeyboardButton(verify_text, url=f"https://t.me/{c.me.username}?start=verify_{verify_id}")]]
 		if button:
 			button = InlineKeyboardMarkup(button)
 		else:
@@ -138,12 +153,34 @@ async def welcome_msg(c,m,is_request):
 			username=username,
 			mention=new_member.mention
 		)
-		if not is_request or m.chat.is_forum:
-			if m.chat.is_forum:
-				if check['thread_id'] == 1:
-					return
+		if is_request and m.chat.type == enums.ChatType.PRIVATE and check['is_captcha']:
+			await c.send_message(new_member.id, text=welcome_text, reply_markup=button)
+		if m.chat.is_forum:
+			try:
 				wc_msg = await c.send_message(chat_id=chat_id, text=welcome_text, message_thread_id=check['thread_id'], reply_markup=button)
-			else:
-				wc_msg = await c.send_message(chat_id=chat_id, text=welcome_text, reply_markup=button)
+			except Exception:
+				pass
 		else:
 			wc_msg = await m.reply_text(welcome_text, reply_markup=button)
+		if check['is_captcha']:
+			captcha_db = c.db['captcha_list']
+			await captcha_db.insert_one({'verify_id': verify_id, 'chat_id': chat_id, 'user_id': new_member.id, 'answer': [], 'right': 0, 'wrong': 0, 'msg_id': wc_msg.id})
+
+@Mayuri.on_message(filters.group & filters.command("welcomecaptcha", PREFIX) & admin_only)
+async def set_captcha(c,m):
+	db = c.db["welcome_settings"]
+	chat_id = m.chat.id
+	text = m.text
+	text = text.split(None, 1)
+	if len(text) < 2:
+		return
+	check = await db.find_one({'chat_id': chat_id})
+	if not check:
+		return await m.reply_text(await c.tl(chat_id, "welcome_not_set"))
+	args = text[1]
+	if args in ['on', 'yes']:
+		await db.update_one({'chat_id': chat_id},{"$set": {'is_captcha': True}})
+		return await m.reply_text(await c.tl(chat_id, "captcha_enabled"))
+	if args in ['off', 'no']:
+		await db.update_one({'chat_id': chat_id},{"$set": {'is_captcha': False}})
+		return await m.reply_text(await c.tl(chat_id, "captcha_disabled"))
