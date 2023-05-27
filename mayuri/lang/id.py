@@ -291,4 +291,5 @@ Untuk menampilkan daftar perintah yang dapat di non-aktifkan
 	'not_your_captcha': "ID verify dan ID User tidak cocok!",
 	'captcha_enabled': "Captcha diaktifkan.",
 	'captcha_disabled': "Captcha dinon-aktifkan.",
+	'translation_not_found': "Terjemahaan untuk `{}` tidak ditemukan!",
 }
