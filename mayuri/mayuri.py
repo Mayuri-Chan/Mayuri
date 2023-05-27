@@ -145,7 +145,9 @@ class Mayuri(Client):
 		else:
 			lang = "id"
 		t = importlib.import_module("mayuri.lang."+lang)
-		return t.text[string]
+		if string in t.text:
+			return t.text[string]
+		return (t.text['translation_not_found']).format(string)
 
 	async def check_admin(self, chat_id, user_id):
 		db = self.db["admin_list"]

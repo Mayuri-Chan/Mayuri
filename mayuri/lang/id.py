@@ -299,4 +299,5 @@ Untuk menampilkan daftar perintah yang dapat di non-aktifkan
 	'generate_captcha': "Membuat captcha...",
 	'regenerate_captcha': "Membuat ulang captcha...",
 	'verify_text_set': "Teks tombol verify diubah menjadi `{}`.",
+	'translation_not_found': "Terjemahaan untuk `{}` tidak ditemukan!",
 }
