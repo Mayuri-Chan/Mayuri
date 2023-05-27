@@ -14,4 +14,5 @@ You can found this bot on telegram as [Mayuri MK2](https://t.me/Mayuri17_Bot)
 • [pokurt](https://github.com/pokurt)  
 • One4uBot  
 • [EduuRobot](https://github.com/AmanoTeam/EduuRobot)  
-• [IzumiUchihaBOT](https://github.com/soulr344/IzumiUchihaBOT)
+• [IzumiUchihaBOT](https://github.com/soulr344/IzumiUchihaBOT)  
+• [Emoji bot](https://github.com/Mehranalam/Emoji)

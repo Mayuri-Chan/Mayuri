@@ -10,6 +10,7 @@ from mayuri import config, init_help
 from mayuri.plugins import list_all_plugins
 from pyrogram import Client, enums, raw
 from pyrogram.errors import FloodWait, RPCError
+from time import time
 
 log = logging.getLogger("Mayuri")
 
@@ -178,6 +179,8 @@ class Mayuri(Client):
 		if self.scheduler.state == RunState.stopped:
 			# run every 2 hours
 			await self.scheduler.add_schedule(self.adminlist_watcher, IntervalTrigger(seconds=21600))
+			# run every 5 minutes
+			await self.scheduler.add_schedule(self.captcha_timeout_watcher, IntervalTrigger(seconds=60*5))
 			# Run the scheduler in background
 			await self.scheduler.start_in_background()
 
@@ -211,3 +214,20 @@ class Mayuri(Client):
 				else:
 					await db.update_one({'chat_id': chat_id},{"$push": {'list': user_id}}, upsert=True)
 					second_loop = True
+
+	async def captcha_timeout_watcher(self):
+		db = self.db['captcha_list']
+		now = time()
+		async for data in db.find():
+			if data['timeout'] <= now:
+				try:
+					if data['is_request']:
+						await self.decline_chat_join_request(data['chat_id'], data['user_id'])
+					else:
+						await self.ban_chat_member(data['chat_id'], data['user_id'])
+						await self.unban_chat_member(data['chat_id'], data['user_id'])
+					msg = await self.get_messages(data['chat_id'], data['msg_id'])
+					await msg.delete()
+				except Exception:
+					pass
+				await db.delete_one({'verify_id': data['verify_id']})

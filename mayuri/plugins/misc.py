@@ -7,6 +7,7 @@ from datetime import datetime
 from mayuri import HELP_COMMANDS, PREFIX
 from mayuri.lang import list_all_lang
 from mayuri.mayuri import Mayuri
+from mayuri.plugins.captcha import gen_captcha
 from mayuri.util.filters import sudo_only
 from mayuri.util.misc import paginate_plugins
 from mayuri.util.string import split_quotes
@@ -26,13 +27,34 @@ async def alive(c, m):
 	text = alive_text+"\n•  📶 Latency        : {}ms".format(latency)
 	await msg.edit(text)
 
+async def create_captcha(c, m, db, verify_id, user_id):
+	answer, file_name, buttons = await gen_captcha(verify_id,user_id)
+	buttons.append([InlineKeyboardButton("🔄", callback_data=f"_captcha_regen_{verify_id}")])
+	await db.update_one({'verify_id': verify_id}, {"$set": {'answer': answer}})
+	return await m.reply_photo(photo=file_name, caption=(await c.tl(user_id, 'select_all_emojis')), reply_markup=InlineKeyboardMarkup(buttons))
+
 @Mayuri.on_message(filters.command("start", PREFIX))
 async def start_msg(c, m):
+	db = c.db['captcha_list']
 	chat_id = m.chat.id
+	user_id = m.from_user.id
 	if m.chat.type == enums.ChatType.CHANNEL:
 		return await m.edit_text("chat_id: `{}`".format(m.chat.id))
 	if m.chat.type != enums.ChatType.PRIVATE:
 		return await m.reply_text(await c.tl(chat_id, "pm_me"))
+	t = m.text.split()
+	if len(t) > 1:
+		if re.match(r"verify_.*", t[1]):
+			r = re.search("(verify_)([a-zA-Z0-9]{1,})",t[1])
+			verify_id = r.group(2)
+			data = await db.find_one({'verify_id': verify_id})
+			if data:
+				if data['user_id'] != user_id:
+					return await m.reply_text(await c.tl(chat_id, 'not_your_captcha'))
+				msg = await m.reply_text(await c.tl(chat_id, 'generate_captcha'))
+				await c.loop.create_task(create_captcha(c, m, db, verify_id, user_id))
+				return await msg.delete()
+			return await m.reply_text(await c.tl(chat_id, 'verify_id_not_found'))
 	keyboard = None
 	text = "hello!\n"
 	text += "This bot is under development."
