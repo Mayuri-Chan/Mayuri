@@ -134,7 +134,6 @@ async def check_respond(c, q):
 	regen = re.match("(_captcha_regen_)",q.data)
 	if regen:
 		verify_id = q.data[15:]
-		c.log.info(verify_id)
 		check = await db.find_one({'verify_id': verify_id})
 		if check:
 			chat_id = check['chat_id']
@@ -208,6 +207,8 @@ async def check_respond(c, q):
 						username=username,
 						mention=q.from_user.mention
 					)
+					if welcome_set['media']:
+						return await msg.edit_caption(caption=welcome_text, reply_markup=buttons)
 					await msg.edit_text(text=welcome_text, reply_markup=buttons)
 			except Exception as e:
 				c.log.error(f"{e}")

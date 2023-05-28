@@ -17,13 +17,44 @@ async def set_welcome(c,m):
 	enable = True
 	clean_service = False
 	is_captcha = False
+	media = None
+	media_type = None
 	verify_text = None
 	captcha_timeout = "15m"
 	if m.reply_to_message:
-		text = m.reply_to_message.text
+		if m.reply_to_message.photo:
+			text = m.reply_to_message.caption
+			media = m.reply_to_message.photo.file_id
+			media_type = 0
+		elif m.reply_to_message.video:
+			text = m.reply_to_message.caption
+			media = m.reply_to_message.video.file_id
+			media_type = 1
+		elif m.reply_to_message.animation:
+			text = m.reply_to_message.caption
+			media = m.reply_to_message.animation.file_id
+			media_type = 2
+		else:
+			text = m.reply_to_message.text
 	else:
-		text = text.split(None,1)
-		text = text[1]
+		if m.photo:
+			text = m.caption.split(None,1)
+			text = text[1]
+			media = m.photo.file_id
+			media_type = 0
+		elif m.video:
+			text = m.caption.split(None,1)
+			text = text[1]
+			media = m.video.file_id
+			media_type = 1
+		elif m.animation:
+			text = m.caption.split(None,1)
+			text = text[1]
+			media = m.animation.file_id
+			media_type = 2
+		else:
+			text = m.text.split(None,1)
+			text = text[1]
 	check = await db.find_one({'chat_id': chat_id})
 	if check:
 		enable = check['enable']
@@ -37,7 +68,7 @@ async def set_welcome(c,m):
 				thread_id = m.message_thread_id
 			elif not m.message_thread_id:
 				thread_id = 1
-	await db.update_one({'chat_id': chat_id}, {"$set": {'text': text, 'thread_id': thread_id, 'enable': enable, 'clean_service': clean_service, 'is_captcha': is_captcha, 'verify_text': verify_text, 'captcha_timeout': captcha_timeout}}, upsert=True)
+	await db.update_one({'chat_id': chat_id}, {"$set": {'text': text, 'thread_id': thread_id, 'enable': enable, 'clean_service': clean_service, 'is_captcha': is_captcha, 'verify_text': verify_text, 'captcha_timeout': captcha_timeout, 'media': media, 'media_type': media_type}}, upsert=True)
 	r_text = await c.tl(chat_id, "welcome_set")
 	await m.reply_text(r_text)
 
@@ -81,6 +112,8 @@ async def welcome(c,m):
 	if not check:
 		return await m.reply_text(await c.tl(chat_id, "welcome_not_set"))
 	welc_settings = (await c.tl(chat_id, "welcome_settings")).format(check['enable'], check['clean_service'], check['thread_id'], check['is_captcha'], check['captcha_timeout'], check['verify_text'])
+	media = check['media']
+	media_type = check['media_type']
 	if len(text) < 2:
 		if not check['text']:
 			text = await c.tl(chat_id, "default-welcome")
@@ -93,6 +126,13 @@ async def welcome(c,m):
 		else:
 			button = None
 		await m.reply_text(welc_settings)
+		if media:
+			if media_type == 0:
+				return await m.reply_photo(photo=media, caption=text)
+			if media_type == 1:
+				return await m.reply_video(video=media, caption=text)
+			if media_type == 2:
+				return await m.reply_animation(animation=media, caption=text)
 		return await m.reply_text(text, reply_markup=button)
 	args = text[1]
 	if args in ['on', 'yes']:
@@ -103,6 +143,13 @@ async def welcome(c,m):
 		return await m.reply_text(await c.tl(chat_id, "welcome_disabled"))
 	if args == "noformat":
 		await m.reply_text(welc_settings)
+		if media:
+			if media_type == 0:
+				return await m.reply_photo(photo=media, caption=check['text'], parse_mode=enums.ParseMode.DISABLED)
+			if media_type == 1:
+				return await m.reply_video(video=media, caption=check['text'], parse_mode=enums.ParseMode.DISABLED)
+			if media_type == 2:
+				return await m.reply_animation(animation=media, caption=check['text'], parse_mode=enums.ParseMode.DISABLED)
 		return await m.reply_text(check['text'], parse_mode=enums.ParseMode.DISABLED)
 
 @Mayuri.on_message(filters.group, group=10)
@@ -127,6 +174,10 @@ async def welcome_msg(c,m,is_request):
 		return
 	if check['clean_service']:
 		await m.delete()
+	media = None
+	if check['media']:
+		media = check['media']
+		media_type = check['media_type']
 	for new_member in new_members:
 		if not check['text']:
 			text = await c.tl(chat_id, "default-welcome")
@@ -165,13 +216,39 @@ async def welcome_msg(c,m,is_request):
 		)
 		if is_request and m.chat.type == enums.ChatType.PRIVATE and check['is_captcha']:
 			await c.send_message(new_member.id, text=welcome_text, reply_markup=button)
-		if m.chat.is_forum:
-			try:
-				wc_msg = await c.send_message(chat_id=chat_id, text=welcome_text, message_thread_id=check['thread_id'], reply_markup=button)
-			except Exception:
-				pass
+		if media:
+			if media_type == 0:
+				if m.chat.is_forum:
+					try:
+						wc_msg = await c.send_photo(chat_id=chat_id, photo=media, caption=welcome_text, message_thread_id=check['thread_id'], reply_markup=button)
+					except Exception:
+						pass
+				else:
+					wc_msg = await m.reply_photo(photo=media, caption=welcome_text, reply_markup=button)
+			elif media_type == 1:
+				if m.chat.is_forum:
+					try:
+						wc_msg = await c.send_video(chat_id=chat_id, video=media, caption=welcome_text, message_thread_id=check['thread_id'], reply_markup=button)
+					except Exception:
+						pass
+				else:
+					wc_msg = await m.reply_video(video=media, caption=welcome_text, reply_markup=button)
+			elif media_type == 2:
+				if m.chat.is_forum:
+					try:
+						wc_msg = await c.send_animation(chat_id=chat_id, animation=media, caption=welcome_text, message_thread_id=check['thread_id'], reply_markup=button)
+					except Exception:
+						pass
+				else:
+					wc_msg = await m.reply_animation(animation=media, caption=welcome_text, reply_markup=button)
 		else:
-			wc_msg = await m.reply_text(welcome_text, reply_markup=button)
+			if m.chat.is_forum:
+				try:
+					wc_msg = await c.send_message(chat_id=chat_id, text=welcome_text, message_thread_id=check['thread_id'], reply_markup=button)
+				except Exception:
+					pass
+			else:
+				wc_msg = await m.reply_text(welcome_text, reply_markup=button)
 		if check['is_captcha']:
 			msg_id = wc_msg.id
 			captcha_db = c.db['captcha_list']
