@@ -2,15 +2,19 @@ import asyncio
 import colorlog
 import importlib
 import logging
+import time
 from async_pymongo import AsyncClient
 from apscheduler import RunState
 from apscheduler.schedulers.async_ import AsyncScheduler
+from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.interval import IntervalTrigger
+from datetime import datetime
 from mayuri import config, init_help
 from mayuri.plugins import list_all_plugins
 from pyrogram import Client, enums, raw
 from pyrogram.errors import FloodWait, RPCError
 from time import time
+from tzlocal import get_localzone
 
 log = logging.getLogger("Mayuri")
 
@@ -183,6 +187,8 @@ class Mayuri(Client):
 			await self.scheduler.add_schedule(self.adminlist_watcher, IntervalTrigger(seconds=21600))
 			# run every 5 minutes
 			await self.scheduler.add_schedule(self.captcha_timeout_watcher, IntervalTrigger(seconds=60*5))
+			# run twice a week on monday and thursday at 6pm server time
+			await self.scheduler.add_schedule(self.deleted_account_watcher, CronTrigger(day_of_week="mon,thu", hour=18))
 			# Run the scheduler in background
 			await self.scheduler.start_in_background()
 
@@ -233,3 +239,35 @@ class Mayuri(Client):
 				except Exception:
 					pass
 				await db.delete_one({'verify_id': data['verify_id']})
+
+	async def deleted_account_watcher(self):
+		db = self.db["chat_list"]
+		next_time = datetime.fromtimestamp(int(time.time() + (3600*24)))
+		tz = datetime.now(get_localzone()).strftime("%Z")
+		next_clean = f"{next_time} {tz}"
+		async for chat in db.find():
+			if not chat['chat_username']: # Clean only public group
+				continue
+			try:
+				chat_members_count = await self.get_chat_members_count(chat['chat_id'])
+				# Clean only group with less than 4k members
+				# Because telegram limit how much user you can get if the group have ~4000 and more members
+				if chat_members_count >= 4000:
+					continue
+				chat_members = self.get_chat_members(chat['chat_id'])
+			except FloodWait as e:
+				await asyncio.sleep(e.value)
+			except Exception as e:
+				print(e)
+			count = 0
+			async for member in chat_members:
+				try:
+					if member.user.is_deleted and not await self.check_admin(chat['chat_id'], member.user.id):
+						count = count+1
+						await self.ban_chat_member(chat['chat_id'], member.user.id)
+				except FloodWait as e:
+					await asyncio.sleep(e.value)
+				except Exception as e:
+					print(e)
+			if count > 0:
+				await self.send_message(chat['chat_id'],(await self.tl(chat['chat_id'], "zombies_cleaned_schedule")).format(count,next_clean))

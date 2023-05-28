@@ -16,7 +16,6 @@ text = {
 	'refreshing_admin': "Merefresh cache admin...",
 	'search_zombies': "Mencari akun terhapus...",
 	'no_zombies': "Grup bersih. tidak ada akun terhapus :)",
-	'no_zombies_schedule': "Grup bersih. tidak ada akun terhapus :)\n\nPembersihan selanjutnya pada:\n{}",
 	'found_zombies': "Ditemukan {} akun terhapus.\nMembersihan...",
 	'zombies_cleaned': "Berhasil membersihkan {} akun terhapus",
 	'zombies_cleaned_schedule': "Berhasil membersihkan {} akun terhapus\n\nPembersihan selanjutnya pada:\n{}",

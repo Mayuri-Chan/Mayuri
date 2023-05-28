@@ -17,10 +17,9 @@ text = {
 	'refreshing_admin': "Refreshing admin cache...",
 	'search_zombies': "Searching for deleted accounts...",
 	'no_zombies': "Clean group. no deleted accounts :)",
-	'no_zombies_schedule': "Clear group. no deleted accounts :)\n\nNext cleanup on:\n{}",
 	'found_zombies': "Found {} deleted accounts.\nCleaning up...",
 	'zombies_cleaned': "Successfully cleaned {} account deleted",
-	'zombies_cleaned_schedule': "Successfully cleaned {} account deleted\n\nNext cleanup on:\n{}",
+	'zombies_cleaned_schedule': "Successfully cleaned {} deleted account.\n\nNext cleanup on:\n{}",
 	'admin': "AdminTools",
 	'admin_help': """
 This module is used to manage groups.
