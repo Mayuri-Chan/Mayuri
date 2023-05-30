@@ -281,12 +281,56 @@ Untuk menampilkan daftar perintah yang dapat di non-aktifkan
 	'cas_msg': "User {} telah di ban secara global\nAlasan: {}\n\nPowered by: Combot Anti Spam API",
 	'welcome_set': "Pesan Sambutan berhasil diatur",
 	'not_forum': "Grup ini bukan forum. silahkan hidupkan option topic terlebih dahulu!",
+	'greetings': "Pesan Sambutan",
+	'greetings_help': """Modul ini digunakan untuk memberikan pesan sambutan kepada member baru.
+[Pesan sambutan]
+> `/setwelcome <Pesan>`
+Menambahkan/Mengubah pesan sambutan.
+contoh: /setwelcome selamat datang di {chat_name}
+
+> `/welcome <noformat/on/off>`
+Mendapatkan/Mengubah pengaturan pesan sambutan.
+contoh:
+__Mendapatkan pengaturan pesan sambutan__
+`/welcome`
+`/welcome noformat`
+
+__Mengaktifkan pesan sambutan__
+`/welcome on`
+
+__Menonaktifkan pesan sambutan__
+`/welcome off`
+
+Pesan sambutan dapat mengandung media sebagai berikut:
+- Animasi (video tanpa suara)
+- Foto/gambar
+- Video
+	""",
 	'welcome_not_set': "Pesan sambutan belum diatur di grup ini!",
 	'thread_id_set': "Berhasil.\nSemua pesan sambutan akan dikirim ke topic ini.",
 	'welcome_enabled': "Pesan sambutan diaktifkan!",
 	'welcome_disabled': "Pesan sambutan dinon-aktifkan!",
 	'welcome_settings': "**Pengaturan Pesan Sambutan:**\nAktif: {}\nPembersih Pesan Layanan: {}\nForum Thread ID: `{}`\nCaptcha: {}\nCaptcha timeout: {}\nText verifikasi: {}",
 	'default-welcome': "Selamat datang {first} di Grup {chatname}!",
+	'captcha': "Captcha",
+	'captcha_help': """Modul ini digunakan untuk memverifikasi member baru.
+[Captcha]
+> `/welcomecaptcha <on/off>`
+Mengaktifkan/Menonaktifkan captcha.
+
+> `/setcaptchatimeout <time>`
+Mengubah durasi penyelesaian captcha. jika user tidak menyelesaikan captcha dalam waktu X maka user akan ditendang dari grup.
+contoh: `/setcaptchatimeout 20m`
+
+[Unit]
+- m : menit
+- h : jam
+- d : hari
+
+> `/setverifytext <Pesan>`
+Mengubah teks tombol verifikasi.
+contoh: `/setverifytext Saya bukan robot`
+	""",
 	'verif_text': "Klik disini untuk verifikasi!",
 	'verify_id_not_found': "Verify id tidak ditemukan!",
 	'not_your_captcha': "ID verify dan ID User tidak cocok!",

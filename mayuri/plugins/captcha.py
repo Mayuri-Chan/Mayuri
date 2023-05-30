@@ -8,6 +8,9 @@ from PIL import Image
 from pyrogram import filters
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, InputMediaPhoto
 
+__PLUGIN__ = "captcha"
+__HELP__ = "captcha_help"
+
 async def getCAPTCHAJPG(user_id):
 	EmojiBank = ['🐻', '🐔', '☁️', '🔮', '🌀', '🌚', '💎', '🐶', '🍩', '🌏', '🐸', '🌕', '🍏', '🐵', '🌙',
 				'🐧', '🍎', '😀', '🐍', '❄️', '🐚', '🐢', '🌝', '🍺', '🍔', '🍒', '🍫', '🍡', '💣', '🍟',

@@ -279,12 +279,56 @@ To display a list of commands that can be disabled
 	'cas_msg': "User {} has been banned globally\nReason: {}\n\nPowered by: Combot Anti Spam API",
 	'welcome_set': "Welcome message set up successfully",
 	'not_forum': "This group is not a forum. Please turn on the topic option first!",
+	'greetings': "Greetings",
+	'greetings_help': """This module is used to give a welcome message to new members.
+[Greetings]
+> `/setwelcome <Message>`
+Add/Change welcome message.
+example: /setwelcome welcome to {chat_name}
+
+> `/welcome <noformat/on/off>`
+Get/Change welcome message settings.
+example:
+__Getting welcome message settings__
+`/welcome`
+`/welcome noformat`
+
+__Turns on the welcome message__
+`/welcome on`
+
+__Turns off the welcome message__
+`/welcome off`
+
+The welcome message can contain the following media:
+- Animation (video without sound)
+- Photos/pictures
+- Videos
+	""",
 	'welcome_not_set': "Welcome message is not set in this group yet!",
 	'thread_id_set': "Successful.\nAll welcome messages will be sent to this thread.",
 	'welcome_enabled': "Welcome message enabled!",
 	'welcome_disabled': "Welcome message disabled!",
 	'welcome_settings': "**Welcome Message Settings:**\nActive: {}\nService Message Cleaner: {}\nForum Thread ID: `{}`\nCaptcha: {}\nCaptcha timeout: {}\nVerify text: {}",
 	'default-welcome': "Welcome {first} to the {chatname} group!",
+	'captcha': "Captcha",
+	'captcha_help': """This module is used to verify new members.
+[Captcha]
+> `/welcomecaptcha <on/off>`
+Enable/Disable captchas.
+
+> `/setcaptchatimeout <time>`
+Change the duration of captcha completion. if the user does not complete the captcha within X time then the user will be kicked from the group.
+example: `/setcaptchatimeout 20m`
+
+[Units]
+-m : minutes
+-h : hour
+- d : day
+
+> `/setverifytext <Message>`
+Changed the text of the verification button.
+example: `/setverifytext I'm not a robot`
+	""",
 	'verif_text': "Click here to verify!",
 	'verify_id_not_found': "Verify id not found!",
 	'not_your_captcha': "ID verify and User ID do not match!",

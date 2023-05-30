@@ -9,6 +9,9 @@ from mayuri.util.time import create_time
 from pyrogram import enums, filters
 from pyrogram.types import ChatPermissions, InlineKeyboardButton, InlineKeyboardMarkup
 
+__PLUGIN__ = "greetings"
+__HELP__ = "greetings_help"
+
 @Mayuri.on_message(filters.command("setwelcome", PREFIX) & admin_only)
 async def set_welcome(c,m):
 	db = c.db["welcome_settings"]
