@@ -298,5 +298,19 @@ Untuk menampilkan daftar perintah yang dapat di non-aktifkan
 	'generate_captcha': "Membuat captcha...",
 	'regenerate_captcha': "Membuat ulang captcha...",
 	'verify_text_set': "Teks tombol verify diubah menjadi `{}`.",
+	'rules': "Peraturan",
+	'rules_help': """Modul ini digunakan untuk memberikan peraturan di dalam grup
+[Peraturan]
+> `/setrules <Peraturan>`
+Untuk menambahkan/merubah peraturan grup.
+
+> `/rules`
+Untuk melihat peraturan grup.
+	""",
+	'rules_for_this_group': "Peraturan untuk grup ini:\n",
+	'no_rules': "Belum ada peraturan untuk grup ini!.",
+	'rules_set': "Berhasil mengatur peraturan.",
+	'accept': "✅ Setuju",
+	'decline': "❌ Tolak",
 	'translation_not_found': "Terjemahaan untuk `{}` tidak ditemukan!",
 }

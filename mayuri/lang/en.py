@@ -295,5 +295,18 @@ To display a list of commands that can be disabled
 	'generate_captcha': "Generating captcha...",
 	'regenerate_captcha': "Re-generating captcha...",
 	'verify_text_set': "Verify button text has been set to `{}`.",
+	'rules_help': """This module is used to provide rules within the group
+[Rules]
+> `/setrules <Rules>`
+To add/change group rules.
+
+> `/rules`
+To view group rules.
+	""",
+	'rules_for_this_group': "Rules for this group:\n",
+	'no_rules': "Theres no rules for this group yet!.",
+	'rules_set': "Group rules set.",
+	'accept': "✅ Accept",
+	'decline': "❌ Decline",
 	'translation_not_found': "Translation `{}` could not be found!",
 }

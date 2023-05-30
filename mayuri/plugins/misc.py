@@ -36,6 +36,7 @@ async def create_captcha(c, m, db, verify_id, user_id):
 @Mayuri.on_message(filters.command("start", PREFIX))
 async def start_msg(c, m):
 	db = c.db['captcha_list']
+	chat_db = c.db['chat_settings']
 	chat_id = m.chat.id
 	user_id = m.from_user.id
 	if m.chat.type == enums.ChatType.CHANNEL:
@@ -51,7 +52,18 @@ async def start_msg(c, m):
 			if data:
 				if data['user_id'] != user_id:
 					return await m.reply_text(await c.tl(chat_id, 'not_your_captcha'))
-				msg = await m.reply_text(await c.tl(chat_id, 'generate_captcha'))
+				check = await chat_db.find_one({'chat_id': data['chat_id']})
+				if check and 'rules' in check:
+					text = await c.tl(chat_id, "rules_for_this_group")
+					text += check['rules']
+					button = [
+						[
+							InlineKeyboardButton(text=(await c.tl(chat_id, 'accept')), callback_data=f"accept_rules_{verify_id}"),
+							InlineKeyboardButton(text=(await c.tl(chat_id, 'decline')), callback_data=f"decline_rules_{verify_id}")
+						]
+					]
+					return await m.reply_text(text, reply_markup=InlineKeyboardMarkup(button))
+				msg = await m.reply_text(text=(await c.tl(chat_id, 'generate_captcha')))
 				await c.loop.create_task(create_captcha(c, m, db, verify_id, user_id))
 				return await msg.delete()
 			return await m.reply_text(await c.tl(chat_id, 'verify_id_not_found'))
@@ -61,6 +73,54 @@ async def start_msg(c, m):
 	text += "\nYou can contact my master [here](tg://user?id={})\n\n".format(c.config['bot']['OWNER'])
 	text += "Powered by [Pyrofork v{}](https://pyrofork.mayuri.my.id)".format(__version__)
 	await m.reply_text(text,reply_markup=keyboard)
+
+async def _create_accept(_, __, query):
+	if re.match(r"accept_rules_", query.data):
+		return True
+
+async def _create_decline(_, __, query):
+	if re.match(r"decline_rules_", query.data):
+		return True
+
+accept_rules_callback = filters.create(_create_accept)
+decline_rules_callback = filters.create(_create_decline)
+
+@Mayuri.on_callback_query(accept_rules_callback)
+async def accept_rules(c,q):
+	db = c.db['captcha_list']
+	m = q.message
+	chat_id = m.chat.id
+	await m.edit_reply_markup(None)
+	query_data = re.search(r'(accept_rules_)(.*)', q.data)
+	verify_id = query_data.group(2)
+	check = await db.find_one({'verify_id': verify_id})
+	if check:
+		msg = await m.reply_text(await c.tl(chat_id, 'generate_captcha'))
+		await c.loop.create_task(create_captcha(c, m, db, verify_id, check['user_id']))
+		return await msg.delete()
+
+@Mayuri.on_callback_query(decline_rules_callback)
+async def decline_rules(c,q):
+	db = c.db['captcha_list']
+	m = q.message
+	chat_id = m.chat.id
+	await m.edit_reply_markup(None)
+	query_data = re.search(r'(decline_rules_)(.*)', q.data)
+	verify_id = query_data.group(2)
+	c.log.info(verify_id)
+	check = await db.find_one({'verify_id': verify_id})
+	if check:
+		try:
+			if check['is_request']:
+				await c.decline_chat_join_request(check['chat_id'], check['user_id'])
+			else:
+				await c.ban_chat_member(check['chat_id'], check['user_id'])
+				await c.unban_chat_member(check['chat_id'], check['user_id'])
+			msg = await c.get_messages(check['chat_id'], check['msg_id'])
+			await msg.delete()
+		except Exception:
+			pass
+		await db.delete_one({'verify_id': check['verify_id']})
 
 async def help_parser(c, chat_id, text, keyboard=None):
 	if not keyboard:
