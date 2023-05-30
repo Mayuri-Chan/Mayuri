@@ -217,8 +217,17 @@ async def welcome_msg(c,m,is_request):
 			username=username,
 			mention=new_member.mention
 		)
-		if is_request and m.chat.type == enums.ChatType.PRIVATE and check['is_captcha']:
-			await c.send_message(new_member.id, text=welcome_text, reply_markup=button)
+		if is_request and m.chat.type == enums.ChatType.PRIVATE:
+			if not check['is_captcha']:
+				return
+			if media:
+				if media_type == 0:
+					return await c.send_photo(new_member.id, photo=media, caption=welcome_text, reply_markup=button)
+				if media_type == 1:
+					return await c.send_video(new_member.id, video=media, caption=welcome_text, reply_markup=button)
+				if media_type == 0:
+					return await c.send_animation(new_member.id, animation=media, caption=welcome_text, reply_markup=button)
+			return await c.send_message(new_member.id, text=welcome_text, reply_markup=button)
 		if media:
 			if media_type == 0:
 				if m.chat.is_forum:
@@ -256,6 +265,51 @@ async def welcome_msg(c,m,is_request):
 			msg_id = wc_msg.id
 			captcha_db = c.db['captcha_list']
 			await captcha_db.insert_one({'verify_id': verify_id, 'chat_id': chat_id, 'user_id': new_member.id, 'answer': [], 'right': 0, 'wrong': 0, 'msg_id': msg_id, 'is_request': is_request, 'timeout': timeout})
+
+@Mayuri.on_message(filters.group, group=101)
+async def private_chat_welcome(c,m):
+	db = c.db["welcome_settings"]
+	if m.chat.username:
+		return
+	if not m.chat_joined_by_request:
+		return
+	user = m.from_user
+	chat_id = m.chat.id
+	check = await db.find_one({'chat_id': chat_id})
+	if check and not check['is_captcha']:
+		media = check['media']
+		media_type = check['media_type']
+		username = user.username
+		text = check['text']
+		text, button = parse_button(text)
+		button = build_keyboard(button)
+		if username:
+			username = "@{}".format(username)
+		welcome_text = (text).format(
+			chatname=m.chat.title,
+			first=user.first_name,
+			last=user.last_name,
+			fullname="{} {}".format(user.first_name, user.last_name),
+			id=user.id,
+			username=username,
+			mention=user.mention
+		)
+		if media:
+			if media_type == 0:
+				if m.chat.is_forum:
+					return await c.send_photo(chat_id, photo=media, caption=welcome_text, message_thread_id=check['thread_id'], reply_markup=button)
+				return await m.reply_photo(photo=media, caption=welcome_text, reply_markup=button)
+			if media_type == 1:
+				if m.chat.is_forum:
+					return await c.send_video(chat_id, video=media, caption=welcome_text, message_thread_id=check['thread_id'], reply_markup=button)
+				return await m.reply_video(video=media, caption=welcome_text, reply_markup=button)
+			if media_type == 0:
+				if m.chat.is_forum:
+					return await c.send_animation(chat_id, animation=media, caption=welcome_text, message_thread_id=check['thread_id'], reply_markup=button)
+				return await m.reply_animation(animation=media, caption=welcome_text, reply_markup=button)
+		if m.chat.is_forum:
+			return await c.send_message(chat_id, text=welcome_text, message_thread_id=check['thread_id'], reply_markup=button)
+		return await m.reply_text(welcome_text, reply_markup=button)
 
 @Mayuri.on_message(filters.group & filters.command("welcomecaptcha", PREFIX) & admin_only)
 async def set_captcha(c,m):
