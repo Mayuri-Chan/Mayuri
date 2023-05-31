@@ -53,7 +53,7 @@ class Mayuri(Client):
 		db = self.db['bot_settings']
 		state = await self.invoke(raw.functions.updates.GetState())
 		value = {'pts': state.pts, 'qts': state.qts, 'date': state.date}
-		await db.update_one({'name': 'state'}, {"$set": {'value': value}})
+		await db.update_one({'name': 'state'}, {"$set": {'value': value}}, upsert=True)
 		await super().stop()
 		self.log.info("---[Bye]---")
 		self.log.info("---[Thankyou for using my bot...]---")
@@ -95,34 +95,39 @@ class Mayuri(Client):
 
 	async def catch_up(self):
 		self.log.info("---[Recovering gaps...]---")
+		db = self.db['bot_settings']
+		state = await db.find_one({'name': 'state'})
+		if not state:
+			return
+		value = state['value']
+		pts = value['pts']
+		date = value['date']
+		prev_pts = 0
 		while(True):
-			db = self.db['bot_settings']
-			state = await db.find_one({'name': 'state'})
-			if not state:
-				state = await self.invoke(raw.functions.updates.GetState())
-				value = {'pts': state.pts, 'qts': state.qts, 'date': state.date}
-				await db.insert_one({'name': 'state', 'value': value})
-				break
-			value = state['value']
 			diff = await self.invoke(
 					raw.functions.updates.GetDifference(
-						pts=value['pts'],
-						date=value['date'],
-						qts=-1
+						pts=pts,
+						date=date,
+						qts=0
 					)
 				)
 			if isinstance(diff, raw.types.updates.DifferenceEmpty):
-				new_value = {'pts': value['pts'], 'qts': value['qts'], 'date': diff.date}
-				await db.update_one({'name': 'state'}, {"$set": {'value': new_value}})
+				await db.delete_one({'name': 'state'})
 				break
 			elif isinstance(diff, raw.types.updates.DifferenceTooLong):
-				new_value = {'pts': diff.pts, 'qts': value['qts'], 'date': diff.date}
-				await db.update_one({'name': 'state'}, {"$set": {'value': new_value}})
+				pts = diff.pts
 				continue
 			users = {u.id: u for u in diff.users}
 			chats = {c.id: c for c in diff.chats}
 			if isinstance(diff, raw.types.updates.DifferenceSlice):
 				new_state = diff.intermediate_state
+				pts = new_state.pts
+				date = new_state.date
+				# Stop if current pts is same with previous loop
+				if prev_pts == pts:
+					await db.delete_one({'name': 'state'})
+					break
+				prev_pts = pts
 			else:
 				new_state = diff.state
 			for msg in diff.new_messages:
@@ -139,6 +144,7 @@ class Mayuri(Client):
 			for update in diff.other_updates:
 				self.dispatcher.updates_queue.put_nowait((update, users, chats))
 			if isinstance(diff, raw.types.updates.Difference):
+				await db.delete_one({'name': 'state'})
 				break
 
 	async def tl(self, chat_id, string):
