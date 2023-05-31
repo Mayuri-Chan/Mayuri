@@ -161,11 +161,11 @@ async def blacklist_task(c,m):
 			target = target.format(file_name)
 			target = await m.download(target)
 			im = cv2.imread(target)
-			im = cv2.cvtColor(im, cv2.COLOR_BGR2RGB)
 			try:
+				im = cv2.cvtColor(im, cv2.COLOR_BGR2RGB)
 				text2 = pytesseract.image_to_string(im, config='--oem 3 --psm 12').lower()
-			except RuntimeError:
-				text2 = ""
+			except Exception:
+				pass
 			os.remove(target)
 	if not text and not text2:
 		return
@@ -176,6 +176,8 @@ async def blacklist_task(c,m):
 		return
 
 	async for trigger in check:
+		ch = None
+		ch2 = None
 		if text:
 			ch = re.search(trigger['trigger'].replace('"',''),text)
 		if text2:
