@@ -112,6 +112,8 @@ async def gban_task(c,m):
 					reason = extracted[1].lower()
 			else:
 				user_id = text[1]
+			if user_id.isnumeric():
+				user_id = int(user_id)
 		else:
 			return await msg.edit_text(await c.tl(chat_id, "need_user_id"))
 		try:
@@ -208,6 +210,8 @@ async def ungban_task(c,m):
 				user_id = extracted[0]
 			else:
 				user_id = text[1]
+			if user_id.isnumeric():
+				user_id = int(user_id)
 		else:
 			return await msg.edit_text(await c.tl(chat_id, "need_user_id"))
 		try:
@@ -279,6 +283,8 @@ async def gmute_task(c,m):
 					reason = extracted[1].lower()
 			else:
 				user_id = text[1]
+			if user_id.isnumeric():
+				user_id = int(user_id)
 		else:
 			return await msg.edit_text(await c.tl(chat_id, "need_user_id"))
 		try:
@@ -375,6 +381,8 @@ async def ungmute_task(c,m):
 				user_id = extracted[0]
 			else:
 				user_id = text[1]
+			if user_id.isnumeric():
+				user_id = int(user_id)
 		else:
 			return await msg.edit_text(await c.tl(chat_id, "need_user_id"))
 		try:

@@ -17,10 +17,10 @@ async def sudo_check(_, c, m):
 	if m.sender_chat:
 		return False
 	user_id = m.from_user.id
-	db = c.db["sudo_list"]
-	check = await db.find_one({'user_id': user_id})
+	db = c.db["bot_settings"]
+	check = await db.find_one({'name': 'sudo_list'})
 	owner = await owner_check(_, c, m)
-	if check or owner:
+	if (check and user_id in check['list']) or owner:
 		return True
 	return False
 
