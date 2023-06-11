@@ -338,6 +338,10 @@ example: `/setverifytext I'm not a robot`
 	'captcha_timeout_set': "Captcha timeout successfully set to {}.",
 	'generate_captcha': "Generating captcha...",
 	'regenerate_captcha': "Re-generating captcha...",
+	'press_verify': "Press verification button below.",
+	'verify': "Verification",
+	'verification_failed': "Verification failed! Please try again.",
+	'gwhitelist_added': "<code>{}</code> Has been added to GWhitelist",
 	'verify_text_set': "Verify button text has been set to `{}`.",
 	'rules_help': """This module is used to provide rules within the group
 [Rules]

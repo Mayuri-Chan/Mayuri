@@ -13,7 +13,7 @@ from mayuri.util.misc import paginate_plugins
 from mayuri.util.string import split_quotes
 from pyrogram import enums, filters, __version__
 from pyrogram.errors import FloodWait, RPCError
-from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, KeyboardButton, ReplyKeyboardMarkup, WebAppInfo
 
 @Mayuri.on_message(filters.command("alive", PREFIX) | filters.command("on", PREFIX) & sudo_only)
 async def alive(c, m):
@@ -63,9 +63,11 @@ async def start_msg(c, m):
 						]
 					]
 					return await m.reply_text(text, reply_markup=InlineKeyboardMarkup(button))
-				msg = await m.reply_text(text=(await c.tl(chat_id, 'generate_captcha')))
-				await c.loop.create_task(create_captcha(c, m, db, verify_id, user_id))
-				return await msg.delete()
+				button = [
+					[InlineKeyboardButton(text="Cloudflare Turnstile", callback_data=f"captcha_tunstile_{verify_id}")],
+					[InlineKeyboardButton(text="Emoji Captcha", callback_data=f"captcha_emoji_{verify_id}")]
+				]
+				return await m.reply_text(text=(await c.tl(chat_id, 'select_captcha_type')), reply_markup=InlineKeyboardMarkup(button))
 			return await m.reply_text(await c.tl(chat_id, 'verify_id_not_found'))
 	keyboard = None
 	text = "hello!\n"
@@ -73,6 +75,40 @@ async def start_msg(c, m):
 	text += "\nYou can contact my master [here](tg://user?id={})\n\n".format(c.config['bot']['OWNER'])
 	text += "Powered by [Pyrofork v{}](https://pyrofork.mayuri.my.id)".format(__version__)
 	await m.reply_text(text,reply_markup=keyboard)
+
+async def _create_tunstile(_, __, query):
+	if re.match(r"captcha_tunstile_", query.data):
+		return True
+
+tunstile_callback = filters.create(_create_tunstile)
+
+@Mayuri.on_callback_query(tunstile_callback)
+async def _captcha_tunstile(c,q):
+	m = q.message
+	chat_id = m.chat.id
+	query_data = re.search(r'(captcha_tunstile_)(.*)', q.data)
+	verify_id = query_data.group(2)
+	button = [[KeyboardButton(text=(await c.tl(chat_id, 'verify')), web_app=WebAppInfo(url=f"{c.config['captcha']['TURNSTILE_URL']}/?verify_id={verify_id}"))]]
+	await m.reply_text(text=(await c.tl(chat_id, 'press_verify')), reply_markup=ReplyKeyboardMarkup(button))
+	await m.delete()
+
+async def _create_emoji(_, __, query):
+	if re.match(r"captcha_emoji_", query.data):
+		return True
+
+emoji_callback = filters.create(_create_emoji)
+
+@Mayuri.on_callback_query(emoji_callback)
+async def _emoji_captcha(c,q):
+	db = c.db['captcha_list']
+	m = q.message
+	chat_id = m.chat.id
+	user_id = chat_id
+	query_data = re.search(r'(captcha_emoji_)(.*)', q.data)
+	verify_id = query_data.group(2)
+	msg = await m.edit_text(text=(await c.tl(chat_id, 'generate_captcha')), reply_markup=None)
+	await c.loop.create_task(create_captcha(c, m, db, verify_id, user_id))
+	await msg.delete()
 
 async def _create_accept(_, __, query):
 	if re.match(r"accept_rules_", query.data):
@@ -95,9 +131,11 @@ async def accept_rules(c,q):
 	verify_id = query_data.group(2)
 	check = await db.find_one({'verify_id': verify_id})
 	if check:
-		msg = await m.reply_text(await c.tl(chat_id, 'generate_captcha'))
-		await c.loop.create_task(create_captcha(c, m, db, verify_id, check['user_id']))
-		return await msg.delete()
+		button = [
+			[InlineKeyboardButton(text="Cloudflare Turnstile", callback_data=f"captcha_tunstile_{verify_id}")],
+			[InlineKeyboardButton(text="Emoji Captcha", callback_data=f"captcha_emoji_{verify_id}")]
+		]
+		await m.reply_text(text=(await c.tl(chat_id, 'select_captcha_type')), reply_markup=InlineKeyboardMarkup(button))
 
 @Mayuri.on_callback_query(decline_rules_callback)
 async def decline_rules(c,q):

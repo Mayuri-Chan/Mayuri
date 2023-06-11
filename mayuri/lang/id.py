@@ -341,6 +341,10 @@ contoh: `/setverifytext Saya bukan robot`
 	'select_all_emojis': "Pilih semua emoji yang ada di gambar:",
 	'generate_captcha': "Membuat captcha...",
 	'regenerate_captcha': "Membuat ulang captcha...",
+	'select_captcha_type': "Pilih jenis captcha:",
+	'press_verify': "Silahkan klik tombol verifikasi dibawah.",
+	'verify': "Verifikasi",
+	'verification_failed': "Verifikasi gagal! Mohon coba lagi.",
 	'verify_text_set': "Teks tombol verify diubah menjadi `{}`.",
 	'rules': "Peraturan",
 	'rules_help': """Modul ini digunakan untuk memberikan peraturan di dalam grup

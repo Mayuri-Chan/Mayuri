@@ -6,7 +6,7 @@ from mayuri.mayuri import Mayuri
 from mayuri.util.string import parse_button, build_keyboard
 from PIL import Image
 from pyrogram import filters
-from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, InputMediaPhoto
+from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, InputMediaPhoto, ReplyKeyboardRemove
 
 __PLUGIN__ = "captcha"
 __HELP__ = "captcha_help"
@@ -215,3 +215,63 @@ async def check_respond(c, q):
 					await msg.edit_text(text=welcome_text, reply_markup=buttons)
 			except Exception as e:
 				c.log.error(f"{e}")
+
+@Mayuri.on_message(filters.private, group=11)
+async def tunstile_watcher(c,m):
+	db = c.db['captcha_list']
+	user_id = m.chat.id
+	if not m.web_app_data:
+		return
+	data = json.loads(m.web_app_data.data)
+	if not data['success']:
+		return await m.reply_text((await c.tl(user_id, 'verification_failed')))
+	verify_id = data['verify_id']
+	check = await db.find_one({'verify_id': verify_id})
+	if check and check['user_id'] == user_id:
+		msg_id = check['msg_id']
+		await m.reply_text("Well done.", reply_markup=ReplyKeyboardRemove())
+		try:
+			if not check['is_request']:
+				permissions = (await c.get_chat(check["chat_id"])).permissions
+				await c.restrict_chat_member(check["chat_id"],user_id, permissions)
+			else:
+				await c.approve_chat_join_request(check["chat_id"],user_id)
+		except Exception as e:
+			c.log.exception(e)
+		else:
+			await db.delete_one({'verify_id': verify_id})
+
+		try:
+			msg = await c.get_messages(check['chat_id'], check['msg_id'])
+			if msg:
+				welcome_db = c.db['welcome_settings']
+				welcome_set = await welcome_db.find_one({'chat_id': check['chat_id']})
+				if not welcome_set['text']:
+					text = await c.tl(check['chat_id'], "default-welcome")
+				else:
+					text = welcome_set['text']
+				text, buttons = parse_button(text)
+				buttons = build_keyboard(buttons)
+				if buttons:
+					buttons = InlineKeyboardButton(buttons)
+				else:
+					buttons = None
+				user = await c.get_users(user_id)
+				username = user.username
+				if username:
+					username = "@{}".format(username)
+				chat = await c.get_chat(check['chat_id'])
+				welcome_text = (text).format(
+					chatname=chat.title,
+					first=user.first_name,
+					last=user.last_name,
+					fullname="{} {}".format(user.first_name, user.last_name),
+					id=user.id,
+					username=username,
+					mention=user.mention
+				)
+				if welcome_set['media']:
+					return await msg.edit_caption(caption=welcome_text, reply_markup=buttons)
+				await msg.edit_text(text=welcome_text, reply_markup=buttons)
+		except Exception as e:
+			c.log.exception(e)

@@ -31,6 +31,11 @@ WORKERS=6
 # wether to use ocr in blacklist text
 USE_OCR=false
 
+[captcha]
+# Cloudflare turnstile workers url
+# https://github.com/Mayuri-Chan/turnstile-workers
+TURNSTILE_URL = "https://appname.username.workers.dev"
+
 [sticker]
 # Log channel for dumping sticker
 # for kang command
