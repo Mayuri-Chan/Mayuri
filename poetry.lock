@@ -54,13 +54,13 @@ resolved_reference = "a13fb440589014bd8e6555f43a12a02cb83a156a"
 
 [[package]]
 name = "async-pymongo"
-version = "0.1.2"
+version = "0.1.3"
 description = "Asynchronous wrapper for pymongo"
 optional = false
 python-versions = ">=3.9,<4.0"
 files = [
-    {file = "async_pymongo-0.1.2-py3-none-any.whl", hash = "sha256:a85b81f5f2fb32df7de2b595ee5081e8d977679009dc740a0d8c2f5bd6b4317e"},
-    {file = "async_pymongo-0.1.2.tar.gz", hash = "sha256:51f96a973620f6e8735f038691235b4a338ecc044ec4d99eff61f2742b8ec63e"},
+    {file = "async_pymongo-0.1.3-py3-none-any.whl", hash = "sha256:5a9805a05a325bf5ce9da5f997ebdd92a38b8bff173f8f5dac8457c77d7180a8"},
+    {file = "async_pymongo-0.1.3.tar.gz", hash = "sha256:82dd06b0916eb3a40346d1e0424c82a5839bc1a32c55b02cce893e93e2ba0a53"},
 ]
 
 [package.dependencies]
@@ -907,4 +907,4 @@ test = ["Cython (>=0.29.32,<0.30.0)", "aiohttp", "flake8 (>=3.9.2,<3.10.0)", "my
 [metadata]
 lock-version = "2.0"
 python-versions = "~=3.9"
-content-hash = "485750342af1af6cc1b05364611db312567084bb57780239be5a1c6d559604ab"
+content-hash = "9ba1c2c9f44008f9739177b1acc35207b4fa1cd8d4cab6f5728de04ae2eefef9"
