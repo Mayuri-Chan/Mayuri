@@ -165,6 +165,7 @@ async def join_request_handler(c,m):
 
 async def welcome_msg(c,m,is_request):
 	db = c.db["welcome_settings"]
+	captcha_db = c.db['captcha_list']
 	chat_id = m.chat.id
 	if not is_request:
 		new_members = m.new_chat_members
@@ -217,17 +218,30 @@ async def welcome_msg(c,m,is_request):
 			username=username,
 			mention=new_member.mention
 		)
-		if is_request and m.chat.type == enums.ChatType.PRIVATE:
+		if is_request:
 			if not check['is_captcha']:
 				return
+			if m.chat.type == enums.ChatType.PRIVATE:
+				if media:
+					if media_type == 0:
+						wc_msg = await c.send_photo(new_member.id, photo=media, caption=welcome_text, reply_markup=button)
+					elif media_type == 1:
+						wc_msg = await c.send_video(new_member.id, video=media, caption=welcome_text, reply_markup=button)
+					elif media_type == 2:
+						wc_msg = await c.send_animation(new_member.id, animation=media, caption=welcome_text, reply_markup=button)
+				else:
+					wc_msg = await c.send_message(new_member.id, text=welcome_text, reply_markup=button)
+				return await captcha_db.insert_one({'verify_id': verify_id, 'chat_id': chat_id, 'user_id': new_member.id, 'answer': [], 'right': 0, 'wrong': 0, 'msg_id': wc_msg.id, 'is_request': is_request, 'timeout': timeout})
 			if media:
 				if media_type == 0:
-					return await c.send_photo(new_member.id, photo=media, caption=welcome_text, reply_markup=button)
-				if media_type == 1:
-					return await c.send_video(new_member.id, video=media, caption=welcome_text, reply_markup=button)
-				if media_type == 0:
-					return await c.send_animation(new_member.id, animation=media, caption=welcome_text, reply_markup=button)
-			return await c.send_message(new_member.id, text=welcome_text, reply_markup=button)
+					wc_msg = await c.send_photo(chat_id, photo=media, caption=welcome_text, reply_markup=button)
+				elif media_type == 1:
+					wc_msg = await c.send_video(chat_id, video=media, caption=welcome_text, reply_markup=button)
+				elif media_type == 2:
+					wc_msg = await c.send_animation(chat_id, animation=media, caption=welcome_text, reply_markup=button)
+			else:
+				wc_msg = await c.send_message(chat_id, text=welcome_text, reply_markup=button)
+			return await captcha_db.insert_one({'verify_id': verify_id, 'chat_id': chat_id, 'user_id': new_member.id, 'answer': [], 'right': 0, 'wrong': 0, 'msg_id': wc_msg.id, 'is_request': is_request, 'timeout': timeout})
 		if media:
 			if media_type == 0:
 				if m.chat.is_forum:
@@ -263,7 +277,6 @@ async def welcome_msg(c,m,is_request):
 				wc_msg = await m.reply_text(welcome_text, reply_markup=button)
 		if check['is_captcha']:
 			msg_id = wc_msg.id
-			captcha_db = c.db['captcha_list']
 			await captcha_db.insert_one({'verify_id': verify_id, 'chat_id': chat_id, 'user_id': new_member.id, 'answer': [], 'right': 0, 'wrong': 0, 'msg_id': msg_id, 'is_request': is_request, 'timeout': timeout})
 
 @Mayuri.on_message(filters.group, group=101)
