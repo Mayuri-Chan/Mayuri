@@ -157,13 +157,15 @@ async def blacklist_task(c,m):
 		if c.config['blacklist']['USE_OCR']:
 			import cv2
 			import pytesseract
+			from pyrogram import utils
 			file_name = ''.join(random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for i in range(10))
 			target = target.format(file_name)
 			target = await m.download(target)
-			im = cv2.imread(target)
+			im = await utils.run_sync(cv2.imread, target)
 			try:
-				im = cv2.cvtColor(im, cv2.COLOR_BGR2RGB)
-				text2 = pytesseract.image_to_string(im, config='--oem 3 --psm 12').lower()
+				im = await utils.run_sync(cv2.cvtColor, im, cv2.COLOR_BGR2RGB)
+				text_from_img = await utils.run_sync(pytesseract.image_to_string, im, config='--oem 3 --psm 12')
+				text2 = text_from_img.lower()
 			except Exception:
 				pass
 			os.remove(target)

@@ -5,7 +5,7 @@ from mayuri import PREFIX
 from mayuri.mayuri import Mayuri
 from mayuri.util.filters import disable
 from mayuri.util.misc import EMOJI_PATTERN, http
-from pyrogram import enums, filters
+from pyrogram import enums, filters, utils
 from pyrogram.errors import PeerIdInvalid, StickersetInvalid
 from pyrogram.raw.functions.channels import GetMessages as GetChannelMessages
 from pyrogram.raw.functions.messages import GetMessages as GetUserMessages, GetStickerSet, SendMedia
@@ -164,7 +164,7 @@ async def cmd_kang(c, m):
 
 	try:
 		if resize:
-			filename = resize_image(filename)
+			filename = await resize_image(filename)
 		max_stickers = 50 if animated else (50 if videos else 120)
 		while not packname_found:
 			try:
@@ -282,19 +282,19 @@ async def cmd_kang(c, m):
 		except OSError:
 			pass
 
-def resize_image(filename: str) -> str:
-	im = cv2.imread(filename,-1)
+async def resize_image(filename: str) -> str:
+	im = await utils.run_sync(cv2.imread, filename,-1)
 	maxsize = 512
 	width = int(im.shape[1])
 	height = int(im.shape[0])
 	scale = maxsize / max(width, height)
 	sizenew = (int(width * scale), int(height * scale))
-	im = cv2.cvtColor(im, cv2.COLOR_BGR2BGRA)
-	im = cv2.resize(im, sizenew, interpolation=cv2.INTER_NEAREST)
+	im = await utils.run_sync(cv2.cvtColor, im, cv2.COLOR_BGR2BGRA)
+	im = await utils.run_sync(cv2.resize, im, sizenew, interpolation=cv2.INTER_NEAREST)
 	downpath, f_name = os.path.split(filename)
 	# not hardcoding png_image as "sticker.png"
 	png_image = os.path.join(downpath, f"{f_name.split('.', 1)[0]}.png")
-	cv2.imwrite(png_image, im)
+	await utils.run_sync(cv2.imwrite, png_image, im)
 	if png_image != filename:
 		os.remove(filename)
 	return png_image
