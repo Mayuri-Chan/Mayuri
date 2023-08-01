@@ -6,7 +6,7 @@ from mayuri.mayuri import Mayuri
 from mayuri.util.filters import admin_only
 from mayuri.util.string import parse_button, build_keyboard
 from mayuri.util.time import create_time
-from pyrogram import enums, filters
+from pyrogram import enums, filters, raw
 from pyrogram.types import ChatPermissions, InlineKeyboardButton, InlineKeyboardMarkup
 
 __PLUGIN__ = "greetings"
@@ -157,27 +157,33 @@ async def welcome(c,m):
 
 @Mayuri.on_message(filters.group, group=10)
 async def welcome_handler(c,m):
-	await welcome_msg(c,m,False)
+	if m.new_chat_members:
+		await welcome_msg(c,m.chat,m.new_chat_members,False)
 
 @Mayuri.on_chat_join_request()
 async def join_request_handler(c,m):
-	await welcome_msg(c,m,True)
+	new_members = [m.from_user]
+	await welcome_msg(c,m.chat,new_members,True)
 
-async def welcome_msg(c,m,is_request):
+@Mayuri.on_raw_update(group=11)
+async def raw_welcome(c,u,_,__):
+	if isinstance(u, raw.types.UpdateChannelParticipant):
+		if hasattr(u, 'new_participant') and isinstance(u.new_participant, raw.types.ChannelParticipant):
+			chat_id = int(f"-100{u.channel_id}")
+			user_id = u.new_participant.user_id
+			chat_raw = await c.invoke(raw.functions.channels.GetFullChannel(channel=await c.resolve_peer(chat_id)))
+			if chat_raw.full_chat.participants_hidden:
+				chat = await c.get_chat(chat_id)
+				new_members = [await c.get_users(user_id)]
+				await welcome_msg(c,chat,new_members,False)
+
+async def welcome_msg(c,chat,new_members,is_request):
 	db = c.db["welcome_settings"]
 	captcha_db = c.db['captcha_list']
-	chat_id = m.chat.id
-	if not is_request:
-		new_members = m.new_chat_members
-		if not new_members:
-			return
-	else:
-		new_members = [m.from_user]
+	chat_id = chat.id
 	check = await db.find_one({'chat_id': chat_id})
 	if not check or (check and not check['enable']):
 		return
-	if check['clean_service']:
-		await m.delete()
 	media = None
 	if check['media']:
 		media = check['media']
@@ -210,7 +216,7 @@ async def welcome_msg(c,m,is_request):
 		if username:
 			username = "@{}".format(username)
 		welcome_text = (text).format(
-			chatname=m.chat.title,
+			chatname=chat.title,
 			first=new_member.first_name,
 			last=new_member.last_name,
 			fullname="{} {}".format(new_member.first_name, new_member.last_name),
@@ -221,7 +227,7 @@ async def welcome_msg(c,m,is_request):
 		if is_request:
 			if not check['is_captcha']:
 				return
-			if m.chat.type == enums.ChatType.PRIVATE:
+			if chat.type == enums.ChatType.PRIVATE:
 				if media:
 					if media_type == 0:
 						wc_msg = await c.send_photo(new_member.id, photo=media, caption=welcome_text, reply_markup=button)
@@ -244,37 +250,37 @@ async def welcome_msg(c,m,is_request):
 			return await captcha_db.insert_one({'verify_id': verify_id, 'chat_id': chat_id, 'user_id': new_member.id, 'answer': [], 'right': 0, 'wrong': 0, 'msg_id': wc_msg.id, 'is_request': is_request, 'timeout': timeout})
 		if media:
 			if media_type == 0:
-				if m.chat.is_forum:
+				if chat.is_forum:
 					try:
 						wc_msg = await c.send_photo(chat_id=chat_id, photo=media, caption=welcome_text, message_thread_id=check['thread_id'], reply_markup=button)
 					except Exception:
 						pass
 				else:
-					wc_msg = await m.reply_photo(photo=media, caption=welcome_text, reply_markup=button)
+					wc_msg = await c.send_photo(chat_id=chat_id, photo=media, caption=welcome_text, reply_markup=button)
 			elif media_type == 1:
-				if m.chat.is_forum:
+				if chat.is_forum:
 					try:
 						wc_msg = await c.send_video(chat_id=chat_id, video=media, caption=welcome_text, message_thread_id=check['thread_id'], reply_markup=button)
 					except Exception:
 						pass
 				else:
-					wc_msg = await m.reply_video(video=media, caption=welcome_text, reply_markup=button)
+					wc_msg = await c.send_video(chat_id=chat_id, video=media, caption=welcome_text, reply_markup=button)
 			elif media_type == 2:
-				if m.chat.is_forum:
+				if chat.is_forum:
 					try:
 						wc_msg = await c.send_animation(chat_id=chat_id, animation=media, caption=welcome_text, message_thread_id=check['thread_id'], reply_markup=button)
 					except Exception:
 						pass
 				else:
-					wc_msg = await m.reply_animation(animation=media, caption=welcome_text, reply_markup=button)
+					wc_msg = await c.send_animation(chat_id=chat_id, animation=media, caption=welcome_text, reply_markup=button)
 		else:
-			if m.chat.is_forum:
+			if chat.is_forum:
 				try:
 					wc_msg = await c.send_message(chat_id=chat_id, text=welcome_text, message_thread_id=check['thread_id'], reply_markup=button)
 				except Exception:
 					pass
 			else:
-				wc_msg = await m.reply_text(welcome_text, reply_markup=button)
+				wc_msg = await c.send_message(chat_id=chat_id, text=welcome_text, reply_markup=button)
 		if check['is_captcha']:
 			msg_id = wc_msg.id
 			await captcha_db.insert_one({'verify_id': verify_id, 'chat_id': chat_id, 'user_id': new_member.id, 'answer': [], 'right': 0, 'wrong': 0, 'msg_id': msg_id, 'is_request': is_request, 'timeout': timeout})
