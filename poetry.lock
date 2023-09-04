@@ -613,13 +613,13 @@ zstd = ["zstandard"]
 
 [[package]]
 name = "pyrofork"
-version = "2.3.1"
+version = "2.3.2"
 description = "Elegant, modern and asynchronous Telegram MTProto API framework in Python for users and bots"
 optional = false
 python-versions = "~=3.7"
 files = [
-    {file = "PyroFork-2.3.1-py3-none-any.whl", hash = "sha256:77101e32bc578df215ebb77a9b4c36e531549eaed4b448805309e46911131a2d"},
-    {file = "PyroFork-2.3.1.tar.gz", hash = "sha256:f893418b28c6001243794269ee7d878117a4d2819cc69e03263e3a18adba55b5"},
+    {file = "PyroFork-2.3.2-py3-none-any.whl", hash = "sha256:0ca43d8346e89f26e7db08c5744b5dd02505552086ca2fb66b710fc96744ae92"},
+    {file = "PyroFork-2.3.2.tar.gz", hash = "sha256:d9264ec61accf349c74cd18e7b4b0710543e373c2adf8354f32813d4941d6e44"},
 ]
 
 [package.dependencies]
@@ -905,4 +905,4 @@ test = ["Cython (>=0.29.32,<0.30.0)", "aiohttp", "flake8 (>=3.9.2,<3.10.0)", "my
 [metadata]
 lock-version = "2.0"
 python-versions = "~=3.9"
-content-hash = "e3784a3d97b3ab06a91fb3242187bc3a6cb595ee346117754e5ae0f2577b85f3"
+content-hash = "03f9ce426f334729dd8d6b2839a3a508d1cce8b7194d0ba4c068a4f38cd990db"
