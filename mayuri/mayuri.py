@@ -92,6 +92,7 @@ class Mayuri(Client):
 		logging.getLogger("pymongo").setLevel(logging.WARNING)
 		logging.getLogger("pyrogram").setLevel(logging.ERROR)
 		logging.getLogger("apscheduler").setLevel(logging.WARNING)
+		logging.getLogger("httpx").setLevel(logging.WARNING)
 
 	async def catch_up(self):
 		self.log.info("---[Recovering gaps...]---")

@@ -1,6 +1,6 @@
 import asyncio
+import httpx
 import re
-import requests
 import time
 
 from datetime import datetime
@@ -21,6 +21,7 @@ async def chat_watcher(c,m):
 
 @Mayuri.on_message(filters.group, group=104)
 async def cas_watcher(c,m):
+	requests = httpx.AsyncClient(http2=True)
 	db = c.db["gban_list"]
 	chat_db = c.db["chat_list"]
 	if m.sender_chat:
@@ -31,7 +32,7 @@ async def cas_watcher(c,m):
 	user_id = m.from_user.id
 	mention = m.from_user.mention
 	try:
-		r = requests.get("https://api.cas.chat/check?user_id={}".format(user_id))
+		r = await requests.get(f"https://api.cas.chat/check?user_id={user_id}")
 	except requests.exceptions.RequestException as e:
 		print(e)
 		return False
@@ -41,7 +42,7 @@ async def cas_watcher(c,m):
 	if not r:
 		return False
 	if r["ok"]:
-		reason = "[CAS #{}](https://cas.chat/query?u={})".format(user_id,user_id)
+		reason = f"[CAS #{user_id}](https://cas.chat/query?u={user_id})"
 	else:
 		return False
 	msg = None
