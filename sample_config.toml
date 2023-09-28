@@ -27,6 +27,10 @@ LOG_CHAT=""
 # Number of maximum worker for handling incoming updates.
 WORKERS=6
 
+[backup]
+ENABLE=false
+BACKUP_CHAT=-10012345
+
 [blacklist]
 # wether to use ocr in blacklist text
 USE_OCR=false

@@ -11,6 +11,7 @@ from apscheduler.triggers.interval import IntervalTrigger
 from datetime import datetime
 from mayuri import config, init_help
 from mayuri.plugins import list_all_plugins
+from mayuri.util.backup import backup
 from pyrogram import Client, enums, raw
 from pyrogram.errors import FloodWait, RPCError
 from time import time
@@ -197,6 +198,8 @@ class Mayuri(Client):
 			# run twice a week on monday and thursday at 6pm server time
 			await self.scheduler.add_schedule(self.deleted_account_watcher, CronTrigger(day_of_week="mon,thu", hour=18))
 			# Run the scheduler in background
+			if self.config["backup"]["ENABLE"]:
+				await self.scheduler.add_schedule(self.backup_now, IntervalTrigger(seconds=60*60*6))
 			await self.scheduler.start_in_background()
 
 	async def adminlist_watcher(self):
@@ -278,3 +281,6 @@ class Mayuri(Client):
 					print(e)
 			if count > 0:
 				await self.send_message(chat['chat_id'],(await self.tl(chat['chat_id'], "zombies_cleaned_schedule")).format(count,next_clean))
+
+	async def backup_now(self):
+		await backup(self)
