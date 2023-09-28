@@ -23,3 +23,9 @@ downloads/
 
 # Generated files
 CHANGELOG.md
+
+# Backup files
+*backup*.json
+
+# Secret files
+*.key

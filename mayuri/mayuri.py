@@ -8,10 +8,13 @@ from apscheduler import RunState
 from apscheduler.schedulers.async_ import AsyncScheduler
 from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.interval import IntervalTrigger
+from base64 import b64encode
 from datetime import datetime
 from mayuri import config, init_help
 from mayuri.plugins import list_all_plugins
 from mayuri.util.backup import backup
+from nacl.encoding import Base64Encoder
+from nacl.public import PublicKey, SealedBox
 from pyrogram import Client, enums, raw
 from pyrogram.errors import FloodWait, RPCError
 from time import time
@@ -281,6 +284,13 @@ class Mayuri(Client):
 					print(e)
 			if count > 0:
 				await self.send_message(chat['chat_id'],(await self.tl(chat['chat_id'], "zombies_cleaned_schedule")).format(count,next_clean))
+
+	def encrypt_text(self, text) -> str:
+		public_key = PublicKey(self.config["backup"]["NACL_PUBLIC_KEY"].encode("utf-8"), Base64Encoder())
+		sealed_box = SealedBox(public_key)
+		encrypted = sealed_box.encrypt(bytes(text, "utf-8"))
+		encrypted_str = b64encode(encrypted).decode('utf-8')
+		return encrypted_str
 
 	async def backup_now(self):
 		await backup(self)

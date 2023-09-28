@@ -30,6 +30,9 @@ WORKERS=6
 [backup]
 ENABLE=false
 BACKUP_CHAT=-10012345
+ENABLE_ENCRYPTION=false
+# PyNACL Public Key
+NACL_PUBLIC_KEY=""
 
 [blacklist]
 # wether to use ocr in blacklist text

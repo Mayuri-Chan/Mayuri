@@ -22,6 +22,9 @@ async def backup(c):
 	now = datetime.now()
 	now_formatted = now.strftime("%Y%m%d-%H:%M:%S")
 	filename = f"backup-mayuri-{now_formatted}.json"
+	if c.config["backup"]["ENABLE_ENCRYPTION"]:
+		filename = f"encrypted_{filename}"
+		datas = c.encrypt_text(datas)
 	f = io.BytesIO(datas.encode('utf8'))
 	f.name = filename
 	await c.send_document(chat_id=chat_id, document=f)
@@ -33,6 +36,9 @@ async def backup(c):
 			datas2[col2].append(data2)
 	datas2 = json_util.dumps(datas2, indent = 4)
 	filename2 = f"backup-mayuri_sessions-{now_formatted}.json"
+	if c.config["backup"]["ENABLE_ENCRYPTION"]:
+		filename2 = f"encrypted_{filename2}"
+		datas2 = c.encrypt_text(datas2)
 	f2 = io.BytesIO(datas2.encode('utf8'))
 	f2.name = filename2
 	await c.send_document(chat_id=chat_id, document=f2)
