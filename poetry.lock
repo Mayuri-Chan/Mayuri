@@ -496,16 +496,14 @@ files = [
 ]
 
 [[package]]
-name = "pymediainfo"
+name = "pymediainfo-pyrofork"
 version = "6.0.1"
 description = "A Python wrapper for the mediainfo library."
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "pymediainfo-6.0.1-py3-none-macosx_10_15_x86_64.whl", hash = "sha256:81165e895e1e362fa11c128ce2bc976cb8a74224f96f309a88ee047106041b0a"},
-    {file = "pymediainfo-6.0.1-py3-none-win32.whl", hash = "sha256:bb3a48ac9706626fd2fa7881f4271728459a1c9a082917deb0c7dd343d8a1be5"},
-    {file = "pymediainfo-6.0.1-py3-none-win_amd64.whl", hash = "sha256:c38e79d4d2062732ae555b564c3cac18a6de4f36e033066c617f386cf5e77564"},
-    {file = "pymediainfo-6.0.1.tar.gz", hash = "sha256:96e04bac0dfcb726bed70c314b1219121c4b9344c66a98f426ce27d7f9abffb0"},
+    {file = "pymediainfo-pyrofork-6.0.1.tar.gz", hash = "sha256:42d109fcaae896033d4915bf73cb324a76d60a7ece43cb4daad6e06e2271177f"},
+    {file = "pymediainfo_pyrofork-6.0.1-py2.py3-none-any.whl", hash = "sha256:54bd3d4b50c6cd40e779b23c8135b470ef38a873aa523b3a55cb001901890575"},
 ]
 
 [[package]]
@@ -630,18 +628,18 @@ tests = ["hypothesis (>=3.27.0)", "pytest (>=3.2.1,!=3.3.0)"]
 
 [[package]]
 name = "pyrofork"
-version = "2.3.5.post1"
+version = "2.3.7"
 description = "Elegant, modern and asynchronous Telegram MTProto API framework in Python for users and bots"
 optional = false
 python-versions = "~=3.7"
 files = [
-    {file = "PyroFork-2.3.5.post1-py3-none-any.whl", hash = "sha256:0e2440bc194f559915f97acb005e7a66127e275fbb58b4b1dea596d5cb1f130b"},
-    {file = "PyroFork-2.3.5.post1.tar.gz", hash = "sha256:babb676f70092ccd331ce4a6490b73cdab89507c10ebd8b40959508c316e6ba4"},
+    {file = "PyroFork-2.3.7-py3-none-any.whl", hash = "sha256:0163300a11117162c4b19ef53d59075776d3d1210a2543b0fc9bb7ee66929ffa"},
+    {file = "PyroFork-2.3.7.tar.gz", hash = "sha256:b72b71273b0eb5f764e2695ffa39fd526259e0441e36abf402c4f4860a59e4d6"},
 ]
 
 [package.dependencies]
 pyaes = "1.6.1"
-pymediainfo = ">=6.0.1,<7.0.0"
+pymediainfo-pyrofork = ">=6.0.1,<7.0.0"
 pymongo = ">=4.3.3,<5.0.0"
 pysocks = "1.7.1"
 
