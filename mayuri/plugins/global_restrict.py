@@ -306,9 +306,9 @@ async def gmute_task(c,m):
 			continue
 		try:
 			if duration:
-				await c.restrict_chat_member(chat["chat_id"], user.id, ChatPermissions(), datetime.fromtimestamp(until))
+				await c.restrict_chat_member(chat["chat_id"], user.id, ChatPermissions(all_perms=False), datetime.fromtimestamp(until))
 			else:
-				await c.restrict_chat_member(chat["chat_id"], user.id, ChatPermissions())
+				await c.restrict_chat_member(chat["chat_id"], user.id, ChatPermissions(all_perms=False))
 		except RPCError:
 			print(RPCError)
 	text = (await c.tl(chat_id, "gmuted")).format(user.mention)
@@ -351,11 +351,11 @@ async def gmute_watcher(c,m):
 		if until > now:
 			if until-now < 40:
 				until = now+40
-			await c.restrict_chat_member(chat_id, user_id, ChatPermissions(), datetime.fromtimestamp(until))
+			await c.restrict_chat_member(chat_id, user_id, ChatPermissions(all_perms=False), datetime.fromtimestamp(until))
 		else:
 			return await db.delete_one({'user_id': user_id})
 	else:
-		await c.restrict_chat_member(chat_id, user_id, ChatPermissions())
+		await c.restrict_chat_member(chat_id, user_id, ChatPermissions(all_perms=False))
 	text = (await c.tl(chat_id, "user_in_gmute")).format(mention)
 	if until != 0:
 		text += (await c.tl(chat_id, "restrict_time_left")).format(time_left(until))

@@ -198,7 +198,7 @@ async def welcome_msg(c,chat,new_members,is_request):
 		if check['is_captcha']:
 			timeout = create_time(check['captcha_timeout'])
 			if not is_request:
-				await c.restrict_chat_member(chat_id, new_member.id, ChatPermissions())
+				await c.restrict_chat_member(chat_id, new_member.id, ChatPermissions(all_perms=False))
 			if check['verify_text']:
 				verify_text = check['verify_text']
 			else:

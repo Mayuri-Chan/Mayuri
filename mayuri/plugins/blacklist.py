@@ -256,10 +256,10 @@ async def blacklist_task(c,m):
 		await m.delete()
 		text = await c.tl(chat_id, 'muted')
 		if duration_raw:
-			await c.restrict_chat_member(chat_id, user_id, ChatPermissions(), datetime.fromtimestamp(duration))
+			await c.restrict_chat_member(chat_id, user_id, ChatPermissions(all_perms=False), datetime.fromtimestamp(duration))
 			text += (await c.tl(chat_id, 'blacklist_for')).format(tl_time(duration_raw))
 		else:
-			await c.restrict_chat_member(chat_id, user_id, ChatPermissions())
+			await c.restrict_chat_member(chat_id, user_id, ChatPermissions(all_perms=False))
 		text += (await c.tl(chat_id, 'user_and_reason')).format(mention)
 		if reason:
 			text += "<code>{}</code>".format(reason)
