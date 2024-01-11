@@ -629,13 +629,13 @@ tests = ["hypothesis (>=3.27.0)", "pytest (>=3.2.1,!=3.3.0)"]
 
 [[package]]
 name = "pyrofork"
-version = "2.3.15"
+version = "2.3.16.post3"
 description = "Fork of pyrogram. Elegant, modern and asynchronous Telegram MTProto API framework in Python for users and bots"
 optional = false
 python-versions = "~=3.8"
 files = [
-    {file = "pyrofork-2.3.15-py3-none-any.whl", hash = "sha256:0bd314734f059ea62b0df98a46e48b89a67c61bd8672be70f891e91c0d60f8a3"},
-    {file = "pyrofork-2.3.15.tar.gz", hash = "sha256:23cb220921cdb242826058408f19d23d8fd92ff451252ec3e9c63fd5c43aa1f2"},
+    {file = "pyrofork-2.3.16.post3-py3-none-any.whl", hash = "sha256:72997839fe66ce023ceac5f394f9c78be56c1646578337525cc4270b6e016a1f"},
+    {file = "pyrofork-2.3.16.post3.tar.gz", hash = "sha256:9e1f728f636408d28e0034a9e9e79c16dc2dc1919452b8952e63a27baf5c5fc3"},
 ]
 
 [package.dependencies]
