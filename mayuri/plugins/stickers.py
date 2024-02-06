@@ -5,12 +5,12 @@ from mayuri import PREFIX
 from mayuri.mayuri import Mayuri
 from mayuri.util.filters import disable
 from mayuri.util.misc import EMOJI_PATTERN, http
-from pyrogram import enums, filters, utils
-from pyrogram.errors import PeerIdInvalid, StickersetInvalid
-from pyrogram.raw.functions.channels import GetMessages as GetChannelMessages
-from pyrogram.raw.functions.messages import GetMessages as GetUserMessages, GetStickerSet, SendMedia
-from pyrogram.raw.functions.stickers import AddStickerToSet, CreateStickerSet, RemoveStickerFromSet
-from pyrogram.raw.types import (
+from pyrofork import enums, filters, utils
+from pyrofork.errors import PeerIdInvalid, StickersetInvalid
+from pyrofork.raw.functions.channels import GetMessages as GetChannelMessages
+from pyrofork.raw.functions.messages import GetMessages as GetUserMessages, GetStickerSet, SendMedia
+from pyrofork.raw.functions.stickers import AddStickerToSet, CreateStickerSet, RemoveStickerFromSet
+from pyrofork.raw.types import (
 	DocumentAttributeFilename,
 	InputDocument,
 	InputMediaUploadedDocument,
@@ -18,7 +18,7 @@ from pyrogram.raw.types import (
 	InputStickerSetItem,
 	InputStickerSetShortName,
 )
-from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from pyrofork.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 __PLUGIN__ = "stickers"
 __HELP__ = "stickers_help"

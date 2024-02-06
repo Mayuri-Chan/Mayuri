@@ -1,6 +1,6 @@
 import re
 
-from pyrogram.types import InlineKeyboardButton
+from pyrofork.types import InlineKeyboardButton
 from typing import List
 
 BTN_URL_REGEX = re.compile(r"(\[([^\[]+?)\]\(buttonurl:(?:/{0,2})(.+?)(:same)?\))")
