@@ -9,9 +9,9 @@ from mayuri.mayuri import Mayuri
 from mayuri.util.filters import sudo_only
 from mayuri.util.string import split_quotes
 from mayuri.util.time import create_time, time_left, tl_time
-from pyrogram import filters
-from pyrogram.errors import FloodWait, RPCError
-from pyrogram.types import ChatPermissions
+from pyrofork import filters
+from pyrofork.errors import FloodWait, RPCError
+from pyrofork.types import ChatPermissions
 
 @Mayuri.on_message(filters.group, group=1)
 async def chat_watcher(c,m):

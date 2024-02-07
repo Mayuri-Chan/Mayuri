@@ -3,8 +3,8 @@ import asyncio
 from mayuri import PREFIX
 from mayuri.mayuri import Mayuri
 from mayuri.util.filters import admin_only, disable, sudo_only
-from pyrogram import enums, filters
-from pyrogram.errors import FloodWait, RPCError
+from pyrofork import enums, filters
+from pyrofork.errors import FloodWait, RPCError
 
 __PLUGIN__ = "admin"
 __HELP__ = "admin_help"

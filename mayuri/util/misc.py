@@ -1,7 +1,7 @@
 import httpx
 import re
-from pyrogram import emoji
-from pyrogram.types import InlineKeyboardButton
+from pyrofork import emoji
+from pyrofork.types import InlineKeyboardButton
 
 _EMOJI_REGEXP = None
 

@@ -9,8 +9,8 @@ from mayuri.mayuri import Mayuri
 from mayuri.util.filters import admin_only, disable
 from mayuri.util.string import split_quotes
 from mayuri.util.time import create_time, tl_time
-from pyrogram import filters
-from pyrogram.types import ChatPermissions
+from pyrofork import filters
+from pyrofork.types import ChatPermissions
 from unidecode import unidecode
 
 __PLUGIN__ = "blacklist"
@@ -157,7 +157,7 @@ async def blacklist_task(c,m):
 		if c.config['blacklist']['USE_OCR']:
 			import cv2
 			import pytesseract
-			from pyrogram import utils
+			from pyrofork import utils
 			file_name = ''.join(random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for i in range(10))
 			target = target.format(file_name)
 			target = await m.download(target)

@@ -6,8 +6,8 @@ from mayuri.mayuri import Mayuri
 from mayuri.util.filters import admin_only, disable
 from mayuri.util.string import split_quotes
 from mayuri.util.time import create_time, tl_time
-from pyrogram import filters
-from pyrogram.types import ChatPermissions
+from pyrofork import filters
+from pyrofork.types import ChatPermissions
 
 __PLUGIN__ = "blpack"
 __HELP__ = "blpack_help"
