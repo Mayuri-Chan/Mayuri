@@ -1,7 +1,7 @@
 from mayuri import PREFIX
 from mayuri.mayuri import Mayuri
 from mayuri.util.filters import admin_only
-from pyrogram import filters
+from pyrofork import filters
 
 __PLUGIN__ = "rules"
 __HELP__ = "rules_help"

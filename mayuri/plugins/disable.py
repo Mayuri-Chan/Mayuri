@@ -1,7 +1,7 @@
 from mayuri import DISABLEABLE, PREFIX
 from mayuri.mayuri import Mayuri
 from mayuri.util.filters import admin_only, disable
-from pyrogram import filters
+from pyrofork import filters
 
 __PLUGIN__ = "disable"
 __HELP__ = "disable_help"

@@ -15,8 +15,8 @@ from mayuri.plugins import list_all_plugins
 from mayuri.util.backup import backup
 from nacl.encoding import Base64Encoder
 from nacl.public import PublicKey, SealedBox
-from pyrogram import Client, enums, raw
-from pyrogram.errors import FloodWait, RPCError
+from pyrofork import Client, enums, raw
+from pyrofork.errors import FloodWait, RPCError
 from time import time
 from tzlocal import get_localzone
 
@@ -94,7 +94,7 @@ class Mayuri(Client):
 
 		# Logging necessary for selected libs
 		logging.getLogger("pymongo").setLevel(logging.WARNING)
-		logging.getLogger("pyrogram").setLevel(logging.ERROR)
+		logging.getLogger("pyrofork").setLevel(logging.ERROR)
 		logging.getLogger("apscheduler").setLevel(logging.WARNING)
 		logging.getLogger("httpx").setLevel(logging.WARNING)
 

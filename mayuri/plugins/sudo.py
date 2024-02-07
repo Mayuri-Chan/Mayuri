@@ -1,8 +1,8 @@
 from mayuri import PREFIX
 from mayuri.mayuri import Mayuri
 from mayuri.util.filters import owner_only
-from pyrogram import filters
-from pyrogram.errors import RPCError
+from pyrofork import filters
+from pyrofork.errors import RPCError
 
 @Mayuri.on_message(filters.command("addsudo", PREFIX) & owner_only)
 async def add_sudo(c,m):

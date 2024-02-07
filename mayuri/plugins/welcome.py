@@ -6,8 +6,8 @@ from mayuri.mayuri import Mayuri
 from mayuri.util.filters import admin_only
 from mayuri.util.string import parse_button, build_keyboard
 from mayuri.util.time import create_time
-from pyrogram import enums, filters, raw
-from pyrogram.types import ChatPermissions, InlineKeyboardButton, InlineKeyboardMarkup
+from pyrofork import enums, filters, raw
+from pyrofork.types import ChatPermissions, InlineKeyboardButton, InlineKeyboardMarkup
 
 __PLUGIN__ = "greetings"
 __HELP__ = "greetings_help"

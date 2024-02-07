@@ -11,9 +11,9 @@ from mayuri.plugins.captcha import gen_captcha
 from mayuri.util.filters import sudo_only
 from mayuri.util.misc import paginate_plugins
 from mayuri.util.string import split_quotes
-from pyrogram import enums, filters, __version__
-from pyrogram.errors import FloodWait, RPCError
-from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, KeyboardButton, ReplyKeyboardMarkup, WebAppInfo
+from pyrofork import enums, filters, __version__
+from pyrofork.errors import FloodWait, RPCError
+from pyrofork.types import InlineKeyboardMarkup, InlineKeyboardButton, KeyboardButton, ReplyKeyboardMarkup, WebAppInfo
 
 @Mayuri.on_message(filters.command("alive", PREFIX) | filters.command("on", PREFIX) & sudo_only)
 async def alive(c, m):

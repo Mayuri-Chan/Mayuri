@@ -2,8 +2,8 @@ from mayuri import PREFIX
 from mayuri.mayuri import Mayuri
 from mayuri.util.filters import admin_only, disable
 from mayuri.util.string import split_quotes, parse_button, build_keyboard
-from pyrogram import filters
-from pyrogram.types import InlineKeyboardMarkup
+from pyrofork import filters
+from pyrofork.types import InlineKeyboardMarkup
 
 __PLUGIN__ = "filters"
 __HELP__ = "filters_help"
