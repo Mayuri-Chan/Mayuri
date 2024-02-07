@@ -1,7 +1,7 @@
 import inspect
 import io
 import os
-import pyrogram
+import pyrofork
 import re
 import sys
 import traceback
@@ -14,7 +14,7 @@ from mayuri.util.error import format_exception
 from mayuri.util.filters import owner_only
 from mayuri.util.time import format_duration_us, usec
 from meval import meval
-from pyrogram import filters
+from pyrofork import filters
 from typing import Any, Optional, Tuple
 
 @Mayuri.on_message(filters.command("eval", PREFIX) & owner_only)
@@ -26,7 +26,7 @@ async def exec_eval(c,m):
 	out_buf = io.StringIO()
 	async def _eval() -> Tuple[str, Optional[str]]:
 		# Message sending helper for convenience
-		async def send(*args: Any, **kwargs: Any) -> pyrogram.types.Message:
+		async def send(*args: Any, **kwargs: Any) -> pyrofork.types.Message:
 			return await m.reply(*args, **kwargs)
 
 		# Print wrapper to capture output
@@ -47,7 +47,7 @@ async def exec_eval(c,m):
 			"m": m,
 			"msg": m,
 			"message": m,
-			"raw": pyrogram.raw,
+			"raw": pyrofork.raw,
 			# Helper functions
 			"send": send,
 			"print": _print,
@@ -58,7 +58,7 @@ async def exec_eval(c,m):
 			"sys": sys,
 			"traceback": traceback,
 			# Third-party modules
-			"pyrogram": pyrogram,
+			"pyrofork": pyrofork,
 		}
 
 		try:
@@ -110,11 +110,11 @@ Time: {el_str}"""
 
 Time: {el_str}"""
 			await m.reply_document(
-				document=out_file, caption=caption, disable_notification=True,parse_mode=pyrogram.enums.parse_mode.ParseMode.HTML
+				document=out_file, caption=caption, disable_notification=True,parse_mode=pyrofork.enums.parse_mode.ParseMode.HTML
 			)
 		return None
 
 	await m.reply_text(
 		result,
-		parse_mode=pyrogram.enums.parse_mode.ParseMode.HTML,
+		parse_mode=pyrofork.enums.parse_mode.ParseMode.HTML,
 	)

@@ -5,8 +5,8 @@ from mayuri import PREFIX
 from mayuri.mayuri import Mayuri
 from mayuri.util.string import parse_button, build_keyboard
 from PIL import Image
-from pyrogram import filters
-from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, InputMediaPhoto, ReplyKeyboardRemove
+from pyrofork import filters
+from pyrofork.types import InlineKeyboardMarkup, InlineKeyboardButton, InputMediaPhoto, ReplyKeyboardRemove
 
 __PLUGIN__ = "captcha"
 __HELP__ = "captcha_help"

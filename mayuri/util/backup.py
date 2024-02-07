@@ -1,6 +1,6 @@
 import io
 import os
-import pyrogram
+import pyrofork
 from async_pymongo import AsyncClient
 from bson import json_util
 from datetime import datetime
@@ -14,7 +14,7 @@ async def backup(c):
 		async for data in db[col].find():
 			data.pop("_id", None)
 			datas[col].append(data)
-	state = await c.invoke(pyrogram.raw.functions.updates.GetState())
+	state = await c.invoke(pyrofork.raw.functions.updates.GetState())
 	value = {'pts': state.pts, 'qts': state.qts, 'date': state.date}
 	data = {'name': 'state', 'value': value}
 	datas["bot_settings"].append(data)
